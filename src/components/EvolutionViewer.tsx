@@ -15,14 +15,15 @@ export const EvolutionViewer = ({ entry }: EvolutionViewerProps) => {
         {entry.subtitle}
       </h2>
 
-      <div className="flex items-start justify-center gap-5 flex-wrap md:flex-nowrap overflow-x-auto">
+      <div className="flex items-center justify-center gap-8 flex-wrap md:flex-nowrap">
         {entry.stages.map((stage, index) => (
           <>
             <div
               key={stage.id}
-              className="flex-1 min-w-[280px] max-w-[350px] text-center p-4 bg-[hsl(var(--encyclopedia-card))] border border-[hsl(var(--encyclopedia-border))] rounded-md shadow-sm"
+              className="w-[320px] bg-gradient-to-b from-cyan-950/40 to-purple-950 rounded-2xl overflow-hidden border-2 border-cyan-500/30 shadow-2xl"
             >
-              <div className="w-full h-[200px] mb-4 border border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--encyclopedia-card))] rounded flex items-center justify-center overflow-hidden">
+              {/* Image Section with Gradient Background */}
+              <div className="relative w-full h-[380px] bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-end justify-center overflow-hidden">
                 {stage.imageUrl ? (
                   <img
                     src={stage.imageUrl}
@@ -30,27 +31,47 @@ export const EvolutionViewer = ({ entry }: EvolutionViewerProps) => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="text-muted-foreground">No image</div>
+                  <div className="text-cyan-100/60 text-sm">No image</div>
                 )}
               </div>
 
-              <h3 className="encyclopedia-title text-2xl mb-3 text-[hsl(var(--encyclopedia-title))]">
-                {stage.name}
-              </h3>
+              {/* Info Section */}
+              <div className="p-5 bg-gradient-to-b from-slate-900 to-purple-950/90">
+                {/* Title and Level */}
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="encyclopedia-title text-2xl text-white leading-tight flex-1">
+                    {stage.name}
+                  </h3>
+                  <span className="text-white/80 text-sm font-semibold ml-2">
+                    LVL {stage.stage}
+                  </span>
+                </div>
 
-              <div className="inline-block border border-[hsl(var(--encyclopedia-border))] px-3 py-1 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))]">
-                {stage.tier} | {stage.stage} | {stage.types.join(" | ")}
+                {/* Subtitle */}
+                <p className="text-cyan-400/70 text-sm mb-4 encyclopedia-body">
+                  {stage.tier}
+                </p>
+
+                {/* Types/Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {stage.types.map((type, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-1.5 text-white/90 text-sm encyclopedia-body"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center">
+                        <span className="text-xs">✦</span>
+                      </div>
+                      {type}
+                    </div>
+                  ))}
+                </div>
               </div>
-
-              <div
-                className="encyclopedia-body text-sm text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: stage.description }}
-              />
             </div>
 
             {index < entry.stages.length - 1 && (
-              <div className="flex items-center justify-center self-center flex-shrink-0 mx-2">
-                <ArrowRight className="w-10 h-10 text-[hsl(var(--encyclopedia-text))]" />
+              <div className="flex items-center justify-center flex-shrink-0">
+                <ArrowRight className="w-10 h-10 text-cyan-400/60" />
               </div>
             )}
           </>
