@@ -200,7 +200,8 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
                 className="encyclopedia-body"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Você pode usar HTML básico para formatação
+                Você pode usar HTML para formatação e ícones inline:<br/>
+                Exemplo: &lt;img src="url-do-icone" class="inline w-4 h-4" /&gt; para adicionar ícones no texto
               </p>
             </div>
           </div>

@@ -27,7 +27,7 @@ export const EvolutionViewer = ({ entry }: EvolutionViewerProps) => {
                   <img
                     src={stage.imageUrl}
                     alt={stage.name}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="text-muted-foreground">No image</div>
