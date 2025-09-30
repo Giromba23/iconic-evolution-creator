@@ -37,13 +37,8 @@ const Index = () => {
   // Save entry mutation
   const saveEntryMutation = useMutation({
     mutationFn: async (entry: EvolutionEntry) => {
-      const { data: existing } = await supabase
-        .from("evolution_entries")
-        .select("id")
-        .eq("id", entry.id)
-        .maybeSingle();
-
-      if (existing) {
+      // Se selectedEntryId existe, é update; senão é insert
+      if (selectedEntryId) {
         const { error } = await supabase
           .from("evolution_entries")
           .update({
@@ -54,16 +49,21 @@ const Index = () => {
           .eq("id", entry.id);
 
         if (error) throw error;
+        toast.success("Entrada atualizada!");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("evolution_entries")
           .insert({
             title: entry.title,
             subtitle: entry.subtitle,
             stages: entry.stages as any,
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+        toast.success("Nova entrada criada!");
+        return data;
       }
 
       return entry;
@@ -89,7 +89,9 @@ const Index = () => {
   const selectedEntry = entries.find((e) => e.id === selectedEntryId);
 
   const handleSaveEntry = (entry: EvolutionEntry) => {
-    saveEntryMutation.mutate(entry);
+    // Se não tem selectedEntryId, é uma nova entrada - remove o ID para forçar INSERT
+    const entryToSave = selectedEntryId ? entry : { ...entry, id: crypto.randomUUID() };
+    saveEntryMutation.mutate(entryToSave);
   };
 
   const createNewEntry = () => {
@@ -176,6 +178,7 @@ const Index = () => {
 
           <TabsContent value="edit" className="mt-0">
             <EvolutionForm
+              key={selectedEntryId || "new"}
               onSave={handleSaveEntry}
               initialData={selectedEntryId ? selectedEntry : undefined}
             />
