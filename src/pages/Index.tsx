@@ -79,12 +79,12 @@ const Index = () => {
     },
   });
 
-  // Auto-select first entry when entries load
+  // Auto-select first entry only when viewing
   useEffect(() => {
-    if (entries.length > 0 && !selectedEntryId) {
+    if (activeTab === "view" && entries.length > 0 && !selectedEntryId) {
       setSelectedEntryId(entries[0].id);
     }
-  }, [entries, selectedEntryId]);
+  }, [entries, selectedEntryId, activeTab]);
 
   const selectedEntry = entries.find((e) => e.id === selectedEntryId);
 
