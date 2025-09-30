@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EvolutionEntry, EvolutionStage } from "@/types/evolution";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,25 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
       },
     ]
   );
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    setTitle(initialData?.title || "");
+    setSubtitle(initialData?.subtitle || "");
+    setStages(
+      initialData?.stages || [
+        {
+          id: crypto.randomUUID(),
+          name: "",
+          imageUrl: "",
+          tier: "",
+          stage: "",
+          types: [],
+          description: "",
+        },
+      ]
+    );
+  }, [initialData]);
 
   const addStage = () => {
     setStages([
