@@ -12,6 +12,7 @@ import { toast } from "sonner";
 const Index = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("view");
+  const [pageDirection, setPageDirection] = useState<"next" | "prev" | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch entries from Supabase
@@ -102,13 +103,21 @@ const Index = () => {
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      setSelectedEntryId(entries[currentIndex - 1].id);
+      setPageDirection("prev");
+      setTimeout(() => {
+        setSelectedEntryId(entries[currentIndex - 1].id);
+        setPageDirection(null);
+      }, 300);
     }
   };
 
   const goToNext = () => {
     if (currentIndex < entries.length - 1) {
-      setSelectedEntryId(entries[currentIndex + 1].id);
+      setPageDirection("next");
+      setTimeout(() => {
+        setSelectedEntryId(entries[currentIndex + 1].id);
+        setPageDirection(null);
+      }, 300);
     }
   };
 
@@ -169,7 +178,16 @@ const Index = () => {
                     </Button>
                   </>
                 )}
-                <div className="px-16">
+                <div 
+                  className={`px-16 ${
+                    pageDirection === "next" 
+                      ? "animate-page-turn-right" 
+                      : pageDirection === "prev" 
+                      ? "animate-page-turn-left" 
+                      : "animate-page-enter"
+                  }`}
+                  style={{ perspective: "2000px" }}
+                >
                   <EvolutionViewer entry={selectedEntry} />
                 </div>
                 {entries.length > 1 && (
