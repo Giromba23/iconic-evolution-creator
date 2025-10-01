@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { EvolutionEntry } from "@/types/evolution";
 import { EvolutionViewer } from "@/components/EvolutionViewer";
 import { EvolutionForm } from "@/components/EvolutionForm";
+import { FlipBook } from "@/components/FlipBook";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlusCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, PlusCircle, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,7 +13,6 @@ import { toast } from "sonner";
 const Index = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("view");
-  const [pageDirection, setPageDirection] = useState<"next" | "prev" | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch entries from Supabase
@@ -101,26 +101,6 @@ const Index = () => {
     setActiveTab("edit");
   };
 
-  const goToPrevious = () => {
-    if (currentIndex > 0) {
-      setPageDirection("prev");
-      setTimeout(() => {
-        setSelectedEntryId(entries[currentIndex - 1].id);
-        setPageDirection(null);
-      }, 300);
-    }
-  };
-
-  const goToNext = () => {
-    if (currentIndex < entries.length - 1) {
-      setPageDirection("next");
-      setTimeout(() => {
-        setSelectedEntryId(entries[currentIndex + 1].id);
-        setPageDirection(null);
-      }, 300);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
@@ -154,66 +134,19 @@ const Index = () => {
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
-            ) : selectedEntry ? (
-              <div className="relative">
-                {entries.length > 1 && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={goToPrevious}
-                      disabled={currentIndex === 0}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={goToNext}
-                      disabled={currentIndex === entries.length - 1}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </Button>
-                  </>
-                )}
-                <div 
-                  className={`px-16 ${
-                    pageDirection === "next" 
-                      ? "animate-page-turn-right" 
-                      : pageDirection === "prev" 
-                      ? "animate-page-turn-left" 
-                      : "animate-page-enter"
-                  }`}
-                  style={{ perspective: "2000px" }}
-                >
-                  <EvolutionViewer entry={selectedEntry} />
+            ) : entries.length > 0 ? (
+              <div className="py-8">
+                <FlipBook entries={entries} />
+                <div className="text-center mt-6 text-sm text-muted-foreground">
+                  Arraste as páginas para navegar • {entries.length} {entries.length === 1 ? 'entrada' : 'entradas'}
                 </div>
-                {entries.length > 1 && (
-                  <div className="text-center mt-4 text-sm text-muted-foreground">
-                    {currentIndex + 1} / {entries.length}
-                  </div>
-                )}
               </div>
-            ) : entries.length === 0 ? (
+            ) : (
               <div className="text-center py-20 bg-card rounded-lg border">
                 <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">Nenhuma entrada criada</h3>
                 <p className="text-muted-foreground mb-4">
                   Crie sua primeira entrada de evolução
-                </p>
-                <Button onClick={createNewEntry}>
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Criar Nova Entrada
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-card rounded-lg border">
-                <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">Nenhuma entrada selecionada</h3>
-                <p className="text-muted-foreground mb-4">
-                  Selecione uma entrada acima ou crie uma nova
                 </p>
                 <Button onClick={createNewEntry}>
                   <PlusCircle className="w-4 h-4 mr-2" />
