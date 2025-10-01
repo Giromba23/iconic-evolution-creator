@@ -20,8 +20,8 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
         <div className="flex-1 flex items-start justify-center gap-6 px-4">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-4">
-              <div className="flex flex-col w-[280px] border border-[hsl(var(--encyclopedia-border))] rounded-lg p-4 bg-white/5">
-                <div className="w-full h-[280px] mb-4 border border-[hsl(var(--encyclopedia-border))] bg-gradient-to-b from-purple-900/20 to-black rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="flex flex-col w-[400px] border border-[hsl(var(--encyclopedia-border))] rounded-lg p-6 bg-white/5">
+                <div className="w-full h-[400px] mb-4 bg-gradient-to-b from-purple-600/40 to-purple-900/60 rounded-lg flex items-center justify-center overflow-hidden">
                   {stage.imageUrl ? (
                     <img
                       src={stage.imageUrl}
