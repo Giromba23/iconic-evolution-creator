@@ -8,20 +8,20 @@ interface FlipBookProps {
 
 const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
   return (
-    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-8 shadow-2xl">
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
-        <h1 className="encyclopedia-title text-3xl text-center mb-2 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+        <h1 className="encyclopedia-title text-2xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
           {entry.title}
         </h1>
-        <h2 className="encyclopedia-title text-base text-center mb-6 text-[hsl(var(--encyclopedia-subtitle))] italic">
+        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
           {entry.subtitle}
         </h2>
 
-        <div className="flex-1 flex items-center justify-center gap-4 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center gap-3 overflow-hidden">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-2">
-              <div className="flex-1 max-w-[200px] text-center">
-                <div className="w-full h-[180px] mb-3 border border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--encyclopedia-card))] rounded flex items-center justify-center overflow-hidden">
+              <div className="flex-1 max-w-[250px] text-center">
+                <div className="w-full h-[240px] mb-3 border border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--encyclopedia-card))] rounded flex items-center justify-center overflow-hidden">
                   {stage.imageUrl ? (
                     <img
                       src={stage.imageUrl}
@@ -33,20 +33,20 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
                   )}
                 </div>
 
-                <h3 className="encyclopedia-title text-lg mb-2 text-[hsl(var(--encyclopedia-title))]">
+                <h3 className="encyclopedia-title text-xl mb-2 text-[hsl(var(--encyclopedia-title))]">
                   {stage.name}
                 </h3>
 
-                <div className="inline-block border border-[hsl(var(--encyclopedia-border))] px-2 py-1 mb-2 encyclopedia-body text-[10px] text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))]">
-                  {stage.tier} | {stage.stage}
+                <div className="inline-block border border-[hsl(var(--encyclopedia-border))] px-3 py-1 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))]">
+                  {stage.tier} | {stage.stage} | {stage.types.join(" | ")}
                 </div>
 
-                <div className="encyclopedia-body text-[10px] text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed line-clamp-4">
+                <div className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed line-clamp-6">
                   {stage.description.replace(/<[^>]*>/g, '')}
                 </div>
               </div>
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))]">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl">→</div>
               )}
             </div>
           ))}
@@ -66,20 +66,20 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
   }
 
   return (
-    <div className="flex justify-center items-center w-full" style={{ perspective: "2000px" }}>
+    <div className="flex justify-center items-center w-full py-8" style={{ perspective: "2000px" }}>
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={600}
-        height={700}
+        width={900}
+        height={600}
         size="stretch"
-        minWidth={300}
-        maxWidth={800}
+        minWidth={600}
+        maxWidth={1200}
         minHeight={400}
-        maxHeight={900}
+        maxHeight={800}
         showCover={true}
         flippingTime={800}
-        usePortrait={true}
+        usePortrait={false}
         startPage={0}
         drawShadow={true}
         className="flipbook"
