@@ -170,6 +170,19 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
               </div>
             </div>
 
+            <div>
+              <Label htmlFor={`link-${stage.id}`}>Link (clique na imagem)</Label>
+              <Input
+                id={`link-${stage.id}`}
+                value={stage.link || ""}
+                onChange={(e) => updateStage(stage.id, "link", e.target.value)}
+                placeholder="https://exemplo.com"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Quando preenchido, ao passar o mouse na imagem ela será clicável
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor={`tier-${stage.id}`}>Tier</Label>
