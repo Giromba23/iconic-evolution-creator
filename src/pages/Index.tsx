@@ -50,7 +50,7 @@ const Index = () => {
           .eq("id", entry.id);
 
         if (error) throw error;
-        toast.success("Entrada atualizada!");
+        return { entry, isNew: false };
       } else {
         const { data, error } = await supabase
           .from("evolution_entries")
@@ -63,16 +63,22 @@ const Index = () => {
           .single();
 
         if (error) throw error;
-        toast.success("Nova entrada criada!");
-        return data;
+        return { entry: data, isNew: true };
       }
-
-      return entry;
     },
-    onSuccess: (entry) => {
+    onSuccess: ({ entry, isNew }) => {
       queryClient.invalidateQueries({ queryKey: ["evolution_entries"] });
       setSelectedEntryId(entry.id);
       setActiveTab("view");
+      
+      // Mostrar toast apenas depois de mudar a aba (evita conflito com FlipBook)
+      setTimeout(() => {
+        if (isNew) {
+          toast.success("Nova entrada criada!");
+        } else {
+          toast.success("Entrada atualizada!");
+        }
+      }, 100);
     },
     onError: (error) => {
       console.error("Error saving entry:", error);
@@ -136,7 +142,7 @@ const Index = () => {
               </div>
             ) : entries.length > 0 ? (
               <div className="py-8">
-                <FlipBook entries={entries} />
+                <FlipBook key={`flipbook-${entries.length}`} entries={entries} />
                 <div className="text-center mt-6 text-sm text-muted-foreground">
                   Arraste as páginas para navegar • {entries.length} {entries.length === 1 ? 'entrada' : 'entradas'}
                 </div>
