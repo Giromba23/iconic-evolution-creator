@@ -4,7 +4,7 @@ import { EvolutionViewer } from "@/components/EvolutionViewer";
 import { EvolutionForm } from "@/components/EvolutionForm";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlusCircle, Loader2 } from "lucide-react";
+import { BookOpen, PlusCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -87,6 +87,7 @@ const Index = () => {
   }, [entries, selectedEntryId, activeTab]);
 
   const selectedEntry = entries.find((e) => e.id === selectedEntryId);
+  const currentIndex = entries.findIndex((e) => e.id === selectedEntryId);
 
   const handleSaveEntry = (entry: EvolutionEntry) => {
     // Se não tem selectedEntryId, é uma nova entrada - remove o ID para forçar INSERT
@@ -97,6 +98,18 @@ const Index = () => {
   const createNewEntry = () => {
     setSelectedEntryId(null);
     setActiveTab("edit");
+  };
+
+  const goToPrevious = () => {
+    if (currentIndex > 0) {
+      setSelectedEntryId(entries[currentIndex - 1].id);
+    }
+  };
+
+  const goToNext = () => {
+    if (currentIndex < entries.length - 1) {
+      setSelectedEntryId(entries[currentIndex + 1].id);
+    }
   };
 
   return (
@@ -127,28 +140,44 @@ const Index = () => {
             </Button>
           </div>
 
-          {entries.length > 0 && (
-            <div className="mb-6 flex flex-wrap gap-2">
-              {entries.map((entry) => (
-                <Button
-                  key={entry.id}
-                  variant={selectedEntryId === entry.id ? "default" : "outline"}
-                  onClick={() => setSelectedEntryId(entry.id)}
-                  className="text-sm"
-                >
-                  {entry.title.substring(0, 30)}...
-                </Button>
-              ))}
-            </div>
-          )}
-
           <TabsContent value="view" className="mt-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : selectedEntry ? (
-              <EvolutionViewer entry={selectedEntry} />
+              <div className="relative">
+                {entries.length > 1 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={goToPrevious}
+                      disabled={currentIndex === 0}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={goToNext}
+                      disabled={currentIndex === entries.length - 1}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 rounded-full shadow-lg"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  </>
+                )}
+                <div className="px-16">
+                  <EvolutionViewer entry={selectedEntry} />
+                </div>
+                {entries.length > 1 && (
+                  <div className="text-center mt-4 text-sm text-muted-foreground">
+                    {currentIndex + 1} / {entries.length}
+                  </div>
+                )}
+              </div>
             ) : entries.length === 0 ? (
               <div className="text-center py-20 bg-card rounded-lg border">
                 <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
