@@ -2,6 +2,7 @@ export interface EvolutionStage {
   id: string;
   name: string;
   imageUrl: string;
+  link?: string;
   tier: string;
   stage: string;
   types: string[];

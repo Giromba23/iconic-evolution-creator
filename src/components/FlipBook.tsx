@@ -23,11 +23,26 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
               <div className="flex flex-col w-[430px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
                 <div className="w-full aspect-[16/9] overflow-hidden">
                   {stage.imageUrl ? (
-                    <img
-                      src={stage.imageUrl}
-                      alt={stage.name}
-                      className="w-full h-full object-cover"
-                    />
+                    stage.link ? (
+                      <a 
+                        href={stage.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block w-full h-full group"
+                      >
+                        <img
+                          src={stage.imageUrl}
+                          alt={stage.name}
+                          className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
+                        />
+                      </a>
+                    ) : (
+                      <img
+                        src={stage.imageUrl}
+                        alt={stage.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )
                   ) : (
                     <div className="w-full h-full bg-[hsl(var(--muted))] flex items-center justify-center">
                       <div className="text-muted-foreground text-xs">No image</div>
