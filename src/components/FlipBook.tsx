@@ -20,8 +20,8 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
         <div className="flex-1 flex items-start justify-center gap-6 px-4">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-4">
-              <div className="flex flex-col w-[380px] border border-[hsl(var(--encyclopedia-border))] rounded-lg p-5 bg-white/5">
-                <div className="w-full aspect-[4/3] mb-4 bg-gradient-to-b from-purple-600/40 to-purple-900/60 rounded-lg overflow-hidden">
+              <div className="flex flex-col w-[280px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-white/5">
+                <div className="w-full aspect-square overflow-hidden">
                   {stage.imageUrl ? (
                     <img
                       src={stage.imageUrl}
@@ -29,20 +29,24 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="text-muted-foreground text-xs flex items-center justify-center h-full">No image</div>
+                    <div className="w-full h-full bg-gradient-to-b from-purple-600/40 to-purple-900/60 flex items-center justify-center">
+                      <div className="text-muted-foreground text-xs">No image</div>
+                    </div>
                   )}
                 </div>
 
-                <h3 className="encyclopedia-title text-xl mb-3 text-center text-[hsl(var(--encyclopedia-title))]">
-                  {stage.name}
-                </h3>
+                <div className="p-4">
+                  <h3 className="encyclopedia-title text-lg mb-2 text-center text-[hsl(var(--encyclopedia-title))]">
+                    {stage.name}
+                  </h3>
 
-                <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-3 py-2 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
-                  {stage.tier} | {stage.stage} | {stage.types.join(" | ")}
-                </div>
+                  <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-2 py-1.5 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
+                    {stage.tier} | {stage.stage} | {stage.types.join(" | ")}
+                  </div>
 
-                <div className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed flex-1">
-                  {stage.description.replace(/<[^>]*>/g, '')}
+                  <div className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed">
+                    {stage.description.replace(/<[^>]*>/g, '')}
+                  </div>
                 </div>
               </div>
               {index < entry.stages.length - 1 && (
