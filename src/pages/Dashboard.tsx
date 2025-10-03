@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EvolutionEntry } from "@/types/evolution";
 import { EvolutionForm } from "@/components/EvolutionForm";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 
 const Dashboard = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
@@ -20,7 +19,6 @@ const Dashboard = () => {
   // Redirect if not admin
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      toast.error("Acesso negado. Apenas administradores podem acessar o dashboard.");
       navigate("/auth");
     }
   }, [user, isAdmin, authLoading, navigate]);
@@ -43,6 +41,7 @@ const Dashboard = () => {
         stages: item.stages as any as EvolutionEntry["stages"],
       }));
     },
+    enabled: !!user && isAdmin,
   });
 
   // Save entry mutation
@@ -100,13 +99,14 @@ const Dashboard = () => {
     saveEntryMutation.mutate(entryToSave);
   };
 
+  const createNewEntry = () => {
+    setSelectedEntryId(null);
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
-  };
-
-  const createNewEntry = () => {
-    setSelectedEntryId(null);
+    toast.success("Logout realizado com sucesso!");
   };
 
   if (authLoading) {
@@ -132,7 +132,7 @@ const Dashboard = () => {
                 Dashboard - Gerenciar Evoluções
               </h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
               <Link to="/">
                 <Button variant="outline">
                   <ArrowLeft className="w-4 h-4 mr-2" />

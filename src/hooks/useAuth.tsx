@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -9,16 +9,16 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check admin role when session changes
+        // Check admin status when session changes
         if (session?.user) {
           setTimeout(() => {
-            checkAdminRole(session.user.id);
+            checkAdminStatus(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
@@ -27,13 +27,13 @@ export const useAuth = () => {
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        checkAdminStatus(session.user.id);
       } else {
         setLoading(false);
       }
@@ -42,23 +42,17 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminRole = async (userId: string) => {
+  const checkAdminStatus = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(!!data);
-      }
+      setIsAdmin(!!data && !error);
     } catch (error) {
-      console.error("Error checking admin role:", error);
       setIsAdmin(false);
     } finally {
       setLoading(false);
@@ -69,11 +63,5 @@ export const useAuth = () => {
     await supabase.auth.signOut();
   };
 
-  return {
-    user,
-    session,
-    isAdmin,
-    loading,
-    signOut,
-  };
+  return { user, session, isAdmin, loading, signOut };
 };

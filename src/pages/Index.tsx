@@ -143,12 +143,14 @@ const Index = () => {
             <p className="text-muted-foreground mb-4">
               O catálogo está vazio. Entre no dashboard para criar entradas.
             </p>
-            <Link to="/dashboard">
-              <Button>
-                <Settings className="w-4 h-4 mr-2" />
-                Ir para Dashboard
-              </Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/dashboard">
+                <Button>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Ir para Dashboard
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>

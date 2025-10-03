@@ -1,29 +1,35 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { Session } from "@supabase/supabase-js";
 
 const Auth = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session) {
+          navigate("/dashboard");
+        }
       }
-    });
+    );
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       if (session) {
         navigate("/dashboard");
       }
@@ -32,34 +38,21 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const redirectUrl = `${window.location.origin}/dashboard`;
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-          },
-        });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
-        toast.success("Conta criada! Verifique seu email para confirmar.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-        toast.success("Login realizado com sucesso!");
-      }
+      if (error) throw error;
+      
+      toast.success("Login realizado com sucesso!");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao autenticar");
+      toast.error(error.message || "Erro ao fazer login");
     } finally {
       setLoading(false);
     }
@@ -70,19 +63,15 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <BookOpen className="w-12 h-12 text-primary" />
+            <BookOpen className="w-12 h-12 text-[hsl(var(--encyclopedia-title))]" />
           </div>
-          <CardTitle className="text-2xl">
-            {isSignUp ? "Criar Conta" : "Entrar"}
-          </CardTitle>
+          <CardTitle className="text-2xl">Admin Login</CardTitle>
           <CardDescription>
-            {isSignUp
-              ? "Crie uma conta de administrador"
-              : "Acesse o painel administrativo"}
+            Faça login para acessar o dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -92,7 +81,6 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -104,24 +92,10 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
-                minLength={6}
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {isSignUp ? "Criar Conta" : "Entrar"}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-            >
-              {isSignUp
-                ? "Já tem uma conta? Entre"
-                : "Não tem conta? Crie uma"}
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
         </CardContent>
