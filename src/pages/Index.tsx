@@ -131,7 +131,7 @@ const Index = () => {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); if (val === "edit") setSelectedEntryId(null); }} className="w-full">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <TabsList>
               <TabsTrigger value="view">Visualizar</TabsTrigger>
