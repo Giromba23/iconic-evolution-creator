@@ -5,7 +5,8 @@ import { EvolutionForm } from "@/components/EvolutionForm";
 import { FlipBook } from "@/components/FlipBook";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlusCircle, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, PlusCircle, Loader2, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 const Index = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("view");
+  const [selectedTier, setSelectedTier] = useState<string>("all");
   const queryClient = useQueryClient();
 
   // Fetch entries from Supabase
@@ -107,6 +109,13 @@ const Index = () => {
     setActiveTab("edit");
   };
 
+  // Filtrar entradas por tier
+  const filteredEntries = selectedTier === "all" 
+    ? entries 
+    : entries.filter(entry => 
+        entry.stages.some(stage => stage.tier.toLowerCase().includes(selectedTier.toLowerCase()))
+      );
+
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
@@ -141,11 +150,44 @@ const Index = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : entries.length > 0 ? (
-              <div className="py-8">
-                <FlipBook key={`flipbook-${entries.length}`} entries={entries} />
-                <div className="text-center mt-6 text-sm text-muted-foreground">
-                  Arraste as páginas para navegar • {entries.length} {entries.length === 1 ? 'entrada' : 'entradas'}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Filter className="w-5 h-5 text-muted-foreground" />
+                  <Select value={selectedTier} onValueChange={setSelectedTier}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filtrar por Tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Tiers</SelectItem>
+                      <SelectItem value="tier 0">Tier 0</SelectItem>
+                      <SelectItem value="tier 1">Tier 1</SelectItem>
+                      <SelectItem value="tier 2">Tier 2</SelectItem>
+                      <SelectItem value="tier 3">Tier 3</SelectItem>
+                      <SelectItem value="tier 4">Tier 4</SelectItem>
+                      <SelectItem value="tier 5">Tier 5</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground">
+                    {filteredEntries.length} {filteredEntries.length === 1 ? 'entrada' : 'entradas'}
+                  </span>
                 </div>
+                
+                {filteredEntries.length > 0 ? (
+                  <div className="py-8">
+                    <FlipBook key={`flipbook-${filteredEntries.length}-${selectedTier}`} entries={filteredEntries} />
+                    <div className="text-center mt-6 text-sm text-muted-foreground">
+                      Arraste as páginas para navegar
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20 bg-card rounded-lg border">
+                    <Filter className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-xl font-semibold mb-2">Nenhuma entrada encontrada</h3>
+                    <p className="text-muted-foreground">
+                      Não há entradas com {selectedTier}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-20 bg-card rounded-lg border">
@@ -163,6 +205,28 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="edit" className="mt-0">
+            {entries.length > 0 && (
+              <div className="mb-6 flex items-center gap-3">
+                <label className="text-sm font-medium">Editar entrada:</label>
+                <Select 
+                  value={selectedEntryId || "new"} 
+                  onValueChange={(value) => setSelectedEntryId(value === "new" ? null : value)}
+                >
+                  <SelectTrigger className="w-[300px]">
+                    <SelectValue placeholder="Selecione uma entrada" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">✨ Nova Entrada</SelectItem>
+                    {entries.map((entry) => (
+                      <SelectItem key={entry.id} value={entry.id}>
+                        {entry.title || "Sem título"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
             <EvolutionForm
               key={selectedEntryId || "new"}
               onSave={handleSaveEntry}
