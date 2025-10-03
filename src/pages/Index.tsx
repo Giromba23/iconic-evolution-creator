@@ -7,10 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { EvolutionEntry } from "@/types/evolution";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [selectedTier, setSelectedTier] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
+  const { isAdmin } = useAuth();
 
   // Fetch entries from Supabase
   const { data: entries = [], isLoading } = useQuery({
@@ -63,12 +65,14 @@ const Index = () => {
                 Enciclopédia de Evoluções
               </h1>
             </div>
-            <Link to="/dashboard">
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/dashboard">
+                <Button variant="outline">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+            )}
           </div>
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
             Explore o catálogo de evoluções de criaturas

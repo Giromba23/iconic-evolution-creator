@@ -1,17 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EvolutionEntry } from "@/types/evolution";
 import { EvolutionForm } from "@/components/EvolutionForm";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, PlusCircle, ArrowLeft } from "lucide-react";
+import { Settings, PlusCircle, ArrowLeft, LogOut, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (!authLoading && (!user || !isAdmin)) {
+      toast.error("Acesso negado. Apenas administradores podem acessar o dashboard.");
+      navigate("/auth");
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   // Fetch entries from Supabase
   const { data: entries = [] } = useQuery({
@@ -88,9 +100,26 @@ const Dashboard = () => {
     saveEntryMutation.mutate(entryToSave);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   const createNewEntry = () => {
     setSelectedEntryId(null);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
@@ -103,12 +132,18 @@ const Dashboard = () => {
                 Dashboard - Gerenciar Evoluções
               </h1>
             </div>
-            <Link to="/">
-              <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Ver Catálogo
+            <div className="flex gap-2">
+              <Link to="/">
+                <Button variant="outline">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Ver Catálogo
+                </Button>
+              </Link>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
               </Button>
-            </Link>
+            </div>
           </div>
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
             Crie e edite suas entradas de evolução
