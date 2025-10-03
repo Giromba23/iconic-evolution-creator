@@ -1,27 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EvolutionEntry } from "@/types/evolution";
 import { EvolutionForm } from "@/components/EvolutionForm";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, PlusCircle, ArrowLeft, LogOut, Loader2 } from "lucide-react";
+import { Settings, PlusCircle, ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      navigate("/auth");
-    }
-  }, [user, isAdmin, authLoading, navigate]);
 
   // Fetch entries from Supabase
   const { data: entries = [] } = useQuery({
@@ -41,7 +31,6 @@ const Dashboard = () => {
         stages: item.stages as any as EvolutionEntry["stages"],
       }));
     },
-    enabled: !!user && isAdmin,
   });
 
   // Save entry mutation
@@ -103,24 +92,6 @@ const Dashboard = () => {
     setSelectedEntryId(null);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-    toast.success("Logout realizado com sucesso!");
-  };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
@@ -132,18 +103,12 @@ const Dashboard = () => {
                 Dashboard - Gerenciar Evoluções
               </h1>
             </div>
-            <div className="flex items-center gap-3">
-              <Link to="/">
-                <Button variant="outline">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Ver Catálogo
-                </Button>
-              </Link>
-              <Button variant="outline" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sair
+            <Link to="/">
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Ver Catálogo
               </Button>
-            </div>
+            </Link>
           </div>
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
             Crie e edite suas entradas de evolução

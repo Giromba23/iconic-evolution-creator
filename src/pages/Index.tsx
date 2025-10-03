@@ -7,12 +7,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { EvolutionEntry } from "@/types/evolution";
-import { useAuth } from "@/hooks/useAuth";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
   const [selectedTier, setSelectedTier] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
-  const { isAdmin } = useAuth();
+  const { t } = useTranslation();
 
   // Fetch entries from Supabase
   const { data: entries = [], isLoading } = useQuery({
@@ -62,20 +63,21 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <BookOpen className="w-8 h-8 text-[hsl(var(--encyclopedia-title))]" />
               <h1 className="encyclopedia-title text-4xl text-[hsl(var(--encyclopedia-title))]">
-                Enciclopédia de Evoluções
+                {t('title')}
               </h1>
             </div>
-            {isAdmin && (
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
               <Link to="/dashboard">
                 <Button variant="outline">
                   <Settings className="w-4 h-4 mr-2" />
-                  Dashboard
+                  {t('dashboard')}
                 </Button>
               </Link>
-            )}
+            </div>
           </div>
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
-            Explore o catálogo de evoluções de criaturas
+            {t('subtitle')}
           </p>
         </div>
 
@@ -89,25 +91,25 @@ const Index = () => {
               <Filter className="w-5 h-5 text-muted-foreground" />
               <Select value={selectedTier} onValueChange={setSelectedTier}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por Tier" />
+                  <SelectValue placeholder={t('filterByTier')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os Tiers</SelectItem>
-                  <SelectItem value="tier 0">Tier 0</SelectItem>
-                  <SelectItem value="tier 1">Tier 1</SelectItem>
-                  <SelectItem value="tier 2">Tier 2</SelectItem>
-                  <SelectItem value="tier 3">Tier 3</SelectItem>
-                  <SelectItem value="tier 4">Tier 4</SelectItem>
-                  <SelectItem value="tier 5">Tier 5</SelectItem>
+                  <SelectItem value="all">{t('allTiers')}</SelectItem>
+                  <SelectItem value="tier 0">{t('tier0')}</SelectItem>
+                  <SelectItem value="tier 1">{t('tier1')}</SelectItem>
+                  <SelectItem value="tier 2">{t('tier2')}</SelectItem>
+                  <SelectItem value="tier 3">{t('tier3')}</SelectItem>
+                  <SelectItem value="tier 4">{t('tier4')}</SelectItem>
+                  <SelectItem value="tier 5">{t('tier5')}</SelectItem>
                 </SelectContent>
               </Select>
               
               <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Filtrar por Tipo" />
+                  <SelectValue placeholder={t('filterByType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os Tipos</SelectItem>
+                  <SelectItem value="all">{t('allTypes')}</SelectItem>
                   {allTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -115,7 +117,7 @@ const Index = () => {
               </Select>
               
               <span className="text-sm text-muted-foreground">
-                {filteredEntries.length} {filteredEntries.length === 1 ? 'entrada' : 'entradas'}
+                {filteredEntries.length} {filteredEntries.length === 1 ? t('entry') : t('entries')}
               </span>
             </div>
             
@@ -123,15 +125,15 @@ const Index = () => {
               <div className="py-8">
                 <FlipBook key={`flipbook-${filteredEntries.length}-${selectedTier}-${selectedType}`} entries={filteredEntries} />
                 <div className="text-center mt-6 text-sm text-muted-foreground">
-                  Arraste as páginas para navegar
+                  {t('dragToNavigate')}
                 </div>
               </div>
             ) : (
               <div className="text-center py-20 bg-card rounded-lg border">
                 <Filter className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">Nenhuma entrada encontrada</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('noEntriesFound')}</h3>
                 <p className="text-muted-foreground">
-                  Não há entradas com os filtros selecionados
+                  {t('noEntriesWithFilters')}
                 </p>
               </div>
             )}
@@ -139,18 +141,16 @@ const Index = () => {
         ) : (
           <div className="text-center py-20 bg-card rounded-lg border">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">Nenhuma entrada no catálogo</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('noCatalogEntries')}</h3>
             <p className="text-muted-foreground mb-4">
-              O catálogo está vazio. Entre no dashboard para criar entradas.
+              {t('catalogEmpty')}
             </p>
-            {isAdmin && (
-              <Link to="/dashboard">
-                <Button>
-                  <Settings className="w-4 h-4 mr-2" />
-                  Ir para Dashboard
-                </Button>
-              </Link>
-            )}
+            <Link to="/dashboard">
+              <Button>
+                <Settings className="w-4 h-4 mr-2" />
+                {t('goToDashboard')}
+              </Button>
+            </Link>
           </div>
         )}
       </div>
