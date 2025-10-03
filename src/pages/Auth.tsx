@@ -1,42 +1,28 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { BookOpen } from "lucide-react";
-import { Session } from "@supabase/supabase-js";
+import { BookOpen, AlertCircle, Home } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading } = useAuth();
 
+  // Redirect apenas se for admin
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        if (session) {
-          navigate("/dashboard");
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        navigate("/dashboard");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (!authLoading && user && isAdmin) {
+      navigate("/dashboard");
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +43,49 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logout realizado!");
+  };
+
+  // Se está logado mas não é admin
+  if (!authLoading && user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="w-12 h-12 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">Acesso Negado</CardTitle>
+            <CardDescription>
+              Você não tem permissão de administrador
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Sua conta não possui privilégios de administrador. Entre em contato com um administrador para solicitar acesso.
+              </AlertDescription>
+            </Alert>
+            <div className="flex flex-col gap-2">
+              <Link to="/">
+                <Button variant="outline" className="w-full">
+                  <Home className="w-4 h-4 mr-2" />
+                  Voltar ao Catálogo
+                </Button>
+              </Link>
+              <Button variant="secondary" onClick={handleSignOut} className="w-full">
+                Sair da Conta
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] flex items-center justify-center p-4">
