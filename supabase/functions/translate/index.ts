@@ -11,9 +11,13 @@ serve(async (req) => {
   }
 
   try {
-    const { text, targetLanguage } = await req.json();
-    if (!text || !targetLanguage) {
-      return new Response(JSON.stringify({ error: "Missing 'text' or 'targetLanguage'" }), {
+    const body = await req.json();
+    const text: string | undefined = body?.text;
+    const texts: string[] | undefined = Array.isArray(body?.texts) ? body.texts : undefined;
+    const targetLanguage: string | undefined = body?.targetLanguage;
+
+    if ((!text && (!texts || texts.length === 0)) || !targetLanguage) {
+      return new Response(JSON.stringify({ error: "Missing 'text'/'texts' or 'targetLanguage'" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -33,6 +37,16 @@ serve(async (req) => {
       pt: "Portuguese"
     };
 
+    const SEP = "<<<SEP>>>";
+    const messages = texts && texts.length > 0
+      ? [
+          { role: "system", content: `You are a translator. Translate each segment separated by ${SEP} into ${languageNames[targetLanguage] || targetLanguage}. Return ONLY the translated segments joined by ${SEP}, same order, same count. Preserve HTML tags and formatting; do not alter numbers.` },
+          { role: "user", content: texts.join(SEP) },
+        ]
+      : [
+          { role: "system", content: `You are a translator. Translate to ${languageNames[targetLanguage] || targetLanguage}. Return ONLY the translated text, no quotes, no explanations. Preserve HTML tags and formatting.` },
+          { role: "user", content: text as string },
+        ];
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -41,16 +55,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are a translator. Translate to ${languageNames[targetLanguage] || targetLanguage}. Return ONLY the translated text, no quotes, no explanations. Preserve HTML tags and formatting.`
-          },
-          {
-            role: "user",
-            content: text
-          }
-        ],
+        messages,
       }),
     });
 
@@ -79,17 +84,23 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const translatedText = data.choices?.[0]?.message?.content;
+    const content = data.choices?.[0]?.message?.content as string | undefined;
 
-    if (!translatedText) {
+    if (!content) {
       throw new Error("No translation received");
     }
 
+    if (texts && texts.length > 0) {
+      const parts = content.split(SEP).map((s: string) => s.trim());
+      return new Response(
+        JSON.stringify({ translatedTexts: parts }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ translatedText }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ translatedText: content }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Translation error:", error);
