@@ -13,6 +13,12 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
   const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
   const { translatedText: tier } = useTranslateContent(stage.tier, `${entryId}-${stage.id}-tier`);
   const { translatedText: stageText } = useTranslateContent(stage.stage, `${entryId}-${stage.id}-stage`);
+  
+  // Traduzir cada tipo individualmente
+  const translatedTypes = stage.types.map((type: string, index: number) => {
+    const { translatedText } = useTranslateContent(type, `${entryId}-${stage.id}-type-${index}`);
+    return translatedText;
+  });
 
   return (
     <div className="flex-1 min-w-[280px] max-w-[350px] text-center p-4 bg-[hsl(var(--encyclopedia-card))] border border-[hsl(var(--encyclopedia-border))] rounded-md shadow-sm">
@@ -33,7 +39,7 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
       </h3>
 
       <div className="inline-block border border-[hsl(var(--encyclopedia-border))] px-3 py-1 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))]">
-        {tier} | {stageText} | {stage.types.join(" | ")}
+        {tier} | {stageText} | {translatedTypes.join(" | ")}
       </div>
 
       <div

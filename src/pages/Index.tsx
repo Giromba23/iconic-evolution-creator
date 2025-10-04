@@ -66,15 +66,7 @@ const Index = () => {
                 {t('title')}
               </h1>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSelector />
-              <Link to="/dashboard">
-                <Button variant="outline">
-                  <Settings className="w-4 h-4 mr-2" />
-                  {t('dashboard')}
-                </Button>
-              </Link>
-            </div>
+            <LanguageSelector />
           </div>
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
             {t('subtitle')}
@@ -142,15 +134,9 @@ const Index = () => {
           <div className="text-center py-20 bg-card rounded-lg border">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-xl font-semibold mb-2">{t('noCatalogEntries')}</h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground">
               {t('catalogEmpty')}
             </p>
-            <Link to="/dashboard">
-              <Button>
-                <Settings className="w-4 h-4 mr-2" />
-                {t('goToDashboard')}
-              </Button>
-            </Link>
           </div>
         )}
       </div>
