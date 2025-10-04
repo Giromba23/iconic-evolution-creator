@@ -2,21 +2,19 @@ import { useRef, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
 import { useTranslateContent } from "@/hooks/useTranslateContent";
-
+import { useTranslation } from "react-i18next";
+import { translateTierLabel, translateStageLabel, translateTypeLabel } from "@/lib/translateControlled";
 interface FlipBookProps {
   entries: EvolutionEntry[];
 }
 
 const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) => {
+  const { t } = useTranslation();
   const { translatedText: name } = useTranslateContent(stage.name, `${entryId}-${stage.id}-name`);
   const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
-  const { translatedText: tier } = useTranslateContent(stage.tier, `${entryId}-${stage.id}-tier`);
-  const { translatedText: stageText } = useTranslateContent(stage.stage, `${entryId}-${stage.id}-stage`);
-  
-  const translatedTypes = stage.types.map((type: string, index: number) => {
-    const { translatedText } = useTranslateContent(type, `${entryId}-${stage.id}-type-${index}`);
-    return translatedText;
-  });
+  const tierLabel = translateTierLabel(stage.tier, t);
+  const stageLabel = translateStageLabel(stage.stage, t);
+  const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
 
   return (
     <div className="flex flex-col w-[430px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
@@ -55,7 +53,7 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
         </h3>
 
         <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-3 py-2 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
-          {tier} | {stageText} | {translatedTypes.join(" | ")}
+          {tierLabel} | {stageLabel} | {typeLabels.join(" | ")}
         </div>
 
         <div 

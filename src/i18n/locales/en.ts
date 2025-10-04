@@ -33,5 +33,21 @@ export default {
     stage: "Stage",
     tier: "Tier",
     types: "Types",
+    type: {
+      earth: "Earth",
+      water: "Water",
+      air: "Air",
+      nature: "Nature",
+      fighter: "Fighter",
+      empath: "Empath",
+      fire: "Fire",
+      ice: "Ice",
+      poison: "Poison",
+      psychic: "Psychic",
+      rock: "Rock",
+      steel: "Steel",
+      shadow: "Shadow",
+      light: "Light",
+    },
   }
 };

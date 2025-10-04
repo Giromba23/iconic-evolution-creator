@@ -33,5 +33,21 @@ export default {
     stage: "Etapa",
     tier: "Tier",
     types: "Tipos",
+    type: {
+      earth: "Terra",
+      water: "Água",
+      air: "Ar",
+      nature: "Natureza",
+      fighter: "Lutador",
+      empath: "Empático",
+      fire: "Fogo",
+      ice: "Gelo",
+      poison: "Veneno",
+      psychic: "Psíquico",
+      rock: "Pedra",
+      steel: "Aço",
+      shadow: "Sombra",
+      light: "Luz",
+    },
   }
 };
