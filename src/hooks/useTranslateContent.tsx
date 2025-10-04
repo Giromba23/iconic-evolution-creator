@@ -32,12 +32,15 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
 
       setIsTranslating(true);
       try {
+        console.log('Translating:', text, 'to', i18n.language);
         const { data, error } = await supabase.functions.invoke('translate', {
           body: { 
             text, 
             targetLanguage: i18n.language 
           }
         });
+
+        console.log('Translation response:', { data, error });
 
         if (error) throw error;
 
@@ -48,6 +51,7 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
           }
           translationCache[cacheKey][i18n.language] = data.translatedText;
           setTranslatedText(data.translatedText);
+          console.log('Translation successful:', data.translatedText);
         }
       } catch (error) {
         console.error('Translation error:', error);
