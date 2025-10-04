@@ -1,17 +1,30 @@
-import { useRef, forwardRef } from "react";
+import { useRef, forwardRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
 import { useTranslateContent } from "@/hooks/useTranslateContent";
 import { useTranslation } from "react-i18next";
 import { translateTierLabel, translateStageLabel, translateTypeLabel } from "@/lib/translateControlled";
+
 interface FlipBookProps {
   entries: EvolutionEntry[];
 }
 
-const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) => {
+interface TranslatedStageProps {
+  stage: any;
+  entryId: string;
+  isVisible: boolean;
+}
+const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
   const { t } = useTranslation();
-  const { translatedText: name, isTranslating: nameLoading } = useTranslateContent(stage.name, `${entryId}-${stage.id}-name`);
-  const { translatedText: description, isTranslating: descLoading } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
+  // Só traduz se a página estiver visível
+  const { translatedText: name, isTranslating: nameLoading } = useTranslateContent(
+    isVisible ? stage.name : '', 
+    `${entryId}-${stage.id}-name`
+  );
+  const { translatedText: description, isTranslating: descLoading } = useTranslateContent(
+    isVisible ? stage.description : '', 
+    `${entryId}-${stage.id}-desc`
+  );
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
   const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
@@ -29,14 +42,14 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
             >
               <img
                 src={stage.imageUrl}
-                alt={name}
+                alt={isVisible ? name : stage.name}
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
               />
             </a>
           ) : (
             <img
               src={stage.imageUrl}
-              alt={name}
+              alt={isVisible ? name : stage.name}
               className="w-full h-full object-cover"
             />
           )
@@ -49,7 +62,7 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
 
       <div className="p-5">
         <h3 className="encyclopedia-title text-2xl mb-3 text-center text-[hsl(var(--encyclopedia-title))]">
-          {name}
+          {isVisible ? (nameLoading ? stage.name : name) : stage.name}
         </h3>
 
         <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-3 py-2 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
@@ -58,30 +71,34 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
 
         <div 
           className="encyclopedia-body text-sm text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: descLoading ? '<em>Traduzindo...</em>' : description }}
+          dangerouslySetInnerHTML={{ 
+            __html: isVisible 
+              ? (descLoading ? '<em>Traduzindo...</em>' : description)
+              : stage.description.replace(/<[^>]*>/g, '')
+          }}
         />
       </div>
     </div>
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
-  const { translatedText: title } = useTranslateContent(entry.title, `${entry.id}-title`);
-  const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>(({ entry, isVisible }, ref) => {
+  const { translatedText: title } = useTranslateContent(isVisible ? entry.title : '', `${entry.id}-title`);
+  const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-8 shadow-2xl">
       <div className="w-full h-full flex flex-col">
         <h1 className="encyclopedia-title text-2xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-          {title}
+          {title || entry.title}
         </h1>
         <h2 className="encyclopedia-title text-sm text-center mb-6 text-[hsl(var(--encyclopedia-subtitle))] italic">
-          {subtitle}
+          {subtitle || entry.subtitle}
         </h2>
 
         <div className="flex-1 flex items-start justify-center gap-8 px-4">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-6">
-              <TranslatedStage stage={stage} entryId={entry.id} />
+              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               {index < entry.stages.length - 1 && (
                 <div className="text-[hsl(var(--encyclopedia-text))] text-3xl font-bold">→</div>
               )}
@@ -97,6 +114,7 @@ Page.displayName = "Page";
 
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   if (entries.length === 0) {
     return null;
@@ -130,9 +148,14 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
         swipeDistance={30}
         showPageCorners={true}
         disableFlipByClick={false}
+        onFlip={(e: any) => setCurrentPage(e.data)}
       >
-        {entries.map((entry) => (
-          <Page key={entry.id} entry={entry} />
+        {entries.map((entry, index) => (
+          <Page 
+            key={entry.id} 
+            entry={entry} 
+            isVisible={index === currentPage || index === currentPage + 1}
+          />
         ))}
       </HTMLFlipBook>
       <style>{`
