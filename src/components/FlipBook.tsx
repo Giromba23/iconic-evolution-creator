@@ -16,15 +16,9 @@ interface TranslatedStageProps {
 }
 const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
   const { t } = useTranslation();
-  // Só traduz se a página estiver visível
-  const { translatedText: name, isTranslating: nameLoading } = useTranslateContent(
-    isVisible ? stage.name : '', 
-    `${entryId}-${stage.id}-name`
-  );
-  const { translatedText: description, isTranslating: descLoading } = useTranslateContent(
-    isVisible ? stage.description : '', 
-    `${entryId}-${stage.id}-desc`
-  );
+  // Traduz apenas se visível
+  const { translatedText: name } = useTranslateContent(isVisible ? stage.name : '', `${entryId}-${stage.id}-name`);
+  const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
   const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
@@ -62,7 +56,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
 
       <div className="p-5">
         <h3 className="encyclopedia-title text-2xl mb-3 text-center text-[hsl(var(--encyclopedia-title))]">
-          {isVisible ? (nameLoading ? stage.name : name) : stage.name}
+          {isVisible && name ? name : stage.name}
         </h3>
 
         <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-3 py-2 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
@@ -72,9 +66,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
         <div 
           className="encyclopedia-body text-sm text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
           dangerouslySetInnerHTML={{ 
-            __html: isVisible 
-              ? (descLoading ? '<em>Traduzindo...</em>' : description)
-              : stage.description.replace(/<[^>]*>/g, '')
+            __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
           }}
         />
       </div>
