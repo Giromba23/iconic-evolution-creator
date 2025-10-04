@@ -14,7 +14,7 @@ const translationCache: TranslatedContent = {};
 const inFlight: Record<string, Promise<string>> = {};
 let queue = Promise.resolve<void>(undefined);
 let lastCallTs = 0;
-const MIN_DELAY_MS = 300; // ajuste se necessário
+const MIN_DELAY_MS = 800; // Aumentado para 800ms para evitar rate limit
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -45,12 +45,15 @@ async function invokeTranslateWithRetry(text: string, targetLanguage: string, at
     }
 
     // Trata 429 do gateway (ou encapsulado em 500 com mensagem)
-    if (status === 429 || message.includes('429')) {
-      if (attempt < 3) {
-        await sleep(1000 * (attempt + 1));
+    if (status === 429 || message.includes('429') || message.includes('Rate limit')) {
+      if (attempt < 5) {
+        const backoff = 2000 * Math.pow(2, attempt); // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+        console.log(`Rate limit hit, retrying in ${backoff}ms (attempt ${attempt + 1}/5)`);
+        await sleep(backoff);
         return invokeTranslateWithRetry(text, targetLanguage, attempt + 1);
       }
       // Sem sucesso após retries: devolve original
+      console.warn('Max retries reached, returning original text');
       return text;
     }
 

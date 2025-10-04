@@ -10,8 +10,8 @@ interface FlipBookProps {
 
 const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) => {
   const { t } = useTranslation();
-  const { translatedText: name } = useTranslateContent(stage.name, `${entryId}-${stage.id}-name`);
-  const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
+  const { translatedText: name, isTranslating: nameLoading } = useTranslateContent(stage.name, `${entryId}-${stage.id}-name`);
+  const { translatedText: description, isTranslating: descLoading } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
   const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
@@ -58,7 +58,7 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
 
         <div 
           className="encyclopedia-body text-sm text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: description }}
+          dangerouslySetInnerHTML={{ __html: descLoading ? '<em>Traduzindo...</em>' : description }}
         />
       </div>
     </div>
