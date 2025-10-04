@@ -17,8 +17,8 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
 
   useEffect(() => {
     const translate = async () => {
-      // Se o idioma é português ou o texto está vazio, não traduz
-      if (i18n.language === 'pt' || !text) {
+      // Se o texto está vazio, não traduz
+      if (!text) {
         setTranslatedText(text);
         return;
       }
