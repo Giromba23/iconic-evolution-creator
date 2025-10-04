@@ -10,6 +10,58 @@ interface TranslatedContent {
 
 const translationCache: TranslatedContent = {};
 
+// Global de-dup + fila simples para evitar rate limit (429)
+const inFlight: Record<string, Promise<string>> = {};
+let queue = Promise.resolve<void>(undefined);
+let lastCallTs = 0;
+const MIN_DELAY_MS = 300; // ajuste se necessário
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function withQueue<T>(fn: () => Promise<T>): Promise<T> {
+  const next = queue.then(async () => {
+    const now = Date.now();
+    const wait = Math.max(0, MIN_DELAY_MS - (now - lastCallTs));
+    if (wait) await sleep(wait);
+    lastCallTs = Date.now();
+    return await fn();
+  });
+  // Mantém a fila encadeada
+  queue = next.then(() => undefined).catch(() => undefined);
+  return next;
+}
+
+async function invokeTranslateWithRetry(text: string, targetLanguage: string, attempt = 0): Promise<string> {
+  return withQueue(async () => {
+    const { data, error } = await supabase.functions.invoke('translate', {
+      body: { text, targetLanguage }
+    });
+
+    const status = (error as any)?.status as number | undefined;
+    const message = (error?.message || data?.error || '').toString();
+
+    if (status === 402) {
+      throw new Error('Limite de créditos de IA atingido.');
+    }
+
+    // Trata 429 do gateway (ou encapsulado em 500 com mensagem)
+    if (status === 429 || message.includes('429')) {
+      if (attempt < 3) {
+        await sleep(1000 * (attempt + 1));
+        return invokeTranslateWithRetry(text, targetLanguage, attempt + 1);
+      }
+      // Sem sucesso após retries: devolve original
+      return text;
+    }
+
+    if (error) {
+      console.error('Translation error:', error);
+      return text;
+    }
+
+    return (data as any)?.translatedText ?? text;
+  });
+}
 export const useTranslateContent = (text: string, fieldKey: string) => {
   const { i18n } = useTranslation();
   const [translatedText, setTranslatedText] = useState(text);
@@ -17,13 +69,11 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
 
   useEffect(() => {
     const translate = async () => {
-      // Se o texto está vazio, não traduz
       if (!text) {
         setTranslatedText(text);
         return;
       }
 
-      // Verifica cache
       const cacheKey = `${fieldKey}-${text}`;
       if (translationCache[cacheKey]?.[i18n.language]) {
         setTranslatedText(translationCache[cacheKey][i18n.language]);
@@ -31,32 +81,24 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
       }
 
       setIsTranslating(true);
+      const inflightKey = `${i18n.language}::${cacheKey}`;
+      if (!inFlight[inflightKey]) {
+        inFlight[inflightKey] = (async () => {
+          const translated = await invokeTranslateWithRetry(text, i18n.language);
+          if (!translationCache[cacheKey]) translationCache[cacheKey] = {};
+          translationCache[cacheKey][i18n.language] = translated;
+          return translated;
+        })();
+      }
+
       try {
-        console.log('Translating:', text, 'to', i18n.language);
-        const { data, error } = await supabase.functions.invoke('translate', {
-          body: { 
-            text, 
-            targetLanguage: i18n.language 
-          }
-        });
-
-        console.log('Translation response:', { data, error });
-
-        if (error) throw error;
-
-        if (data?.translatedText) {
-          // Salva no cache
-          if (!translationCache[cacheKey]) {
-            translationCache[cacheKey] = {};
-          }
-          translationCache[cacheKey][i18n.language] = data.translatedText;
-          setTranslatedText(data.translatedText);
-          console.log('Translation successful:', data.translatedText);
-        }
-      } catch (error) {
-        console.error('Translation error:', error);
-        setTranslatedText(text); // Fallback para texto original
+        const translated = await inFlight[inflightKey];
+        setTranslatedText(translated);
+      } catch (e) {
+        console.error('Translation error:', e);
+        setTranslatedText(text);
       } finally {
+        delete inFlight[inflightKey];
         setIsTranslating(false);
       }
     };
