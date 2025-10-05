@@ -24,7 +24,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
 
   return (
-    <div className="flex flex-col w-[430px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
+    <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       <div className="w-full aspect-[16/9] overflow-hidden">
         {stage.imageUrl ? (
           stage.link ? (
@@ -54,17 +54,17 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
         )}
       </div>
 
-      <div className="p-5">
-        <h3 className="encyclopedia-title text-2xl mb-3 text-center text-[hsl(var(--encyclopedia-title))]">
+      <div className="p-4">
+        <h3 className="encyclopedia-title text-xl mb-2 text-center text-[hsl(var(--encyclopedia-title))]">
           {isVisible && name ? name : stage.name}
         </h3>
 
-        <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-3 py-2 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
+        <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-2 py-1 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
           {tierLabel} | {stageLabel} | {typeLabels.join(" | ")}
         </div>
 
         <div 
-          className="encyclopedia-body text-sm text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
+          className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
           dangerouslySetInnerHTML={{ 
             __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
           }}
@@ -78,21 +78,21 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
   const { translatedText: title } = useTranslateContent(isVisible ? entry.title : '', `${entry.id}-title`);
   const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
   return (
-    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-8 shadow-2xl">
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
-        <h1 className="encyclopedia-title text-2xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+        <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
           {title || entry.title}
         </h1>
-        <h2 className="encyclopedia-title text-sm text-center mb-6 text-[hsl(var(--encyclopedia-subtitle))] italic">
+        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
           {subtitle || entry.subtitle}
         </h2>
 
-        <div className="flex-1 flex items-start justify-center gap-8 px-4">
+        <div className="flex-1 flex items-start justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-center gap-6">
+            <div key={stage.id} className="flex items-center gap-3">
               <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-3xl font-bold">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
               )}
             </div>
           ))}
@@ -117,19 +117,19 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={1400}
-        height={900}
+        width={1600}
+        height={700}
         size="stretch"
-        minWidth={1200}
-        maxWidth={1400}
-        minHeight={800}
-        maxHeight={900}
+        minWidth={1400}
+        maxWidth={1600}
+        minHeight={600}
+        maxHeight={700}
         showCover={false}
         flippingTime={800}
         usePortrait={false}
         startPage={0}
         drawShadow={true}
-        className="flipbook"
+        className="flipbook single-page"
         style={{ margin: "0 auto" }}
         maxShadowOpacity={0.5}
         mobileScrollSupport={true}
@@ -151,7 +151,7 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
         ))}
       </HTMLFlipBook>
       <style>{`
-        .flipbook {
+        .flipbook.single-page {
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
         .page {
