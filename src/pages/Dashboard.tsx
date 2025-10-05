@@ -10,10 +10,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { user, isAdmin, loading: authLoading } = useAuth();
 
   // Fetch entries from Supabase
   const { data: entries = [] } = useQuery({
@@ -93,6 +95,28 @@ const Dashboard = () => {
   const createNewEntry = () => {
     setSelectedEntryId(null);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8 grid place-items-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
+        <div className="max-w-md mx-auto text-center bg-card border rounded-2xl p-8">
+          <h2 className="text-2xl font-semibold mb-2">Acesso restrito</h2>
+          <p className="text-muted-foreground mb-6">Faça login como administrador para gerenciar filtros e entradas.</p>
+          <Link to="/auth">
+            <Button className="px-6">Ir para Login</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
@@ -177,6 +201,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;
