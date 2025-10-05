@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EvolutionEntry } from "@/types/evolution";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useTranslation } from "react-i18next";
+// Fixed: Removed VisualFilter component reference
 
 const Index = () => {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
