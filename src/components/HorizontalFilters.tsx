@@ -88,6 +88,7 @@ export function HorizontalFilters({
                   const isSelected = selected.includes(item.name);
                   const isAffinityCategory = category.name === 'affinity';
                   const isClassCategory = category.name === 'class';
+                  const shouldEnlarge = isAffinityCategory || isClassCategory;
                   
                   return (
                     <Button
@@ -96,7 +97,7 @@ export function HorizontalFilters({
                       size="sm"
                       onClick={() => onToggleItem(category.name, item.name)}
                       className={`rounded-lg transition-all px-3 ${
-                        isAffinityCategory ? 'h-14' : 'h-10'
+                        shouldEnlarge ? 'h-14' : 'h-10'
                       }`}
                       style={{
                         backgroundColor: isSelected 
@@ -114,7 +115,7 @@ export function HorizontalFilters({
                           src={item.icon_url} 
                           alt={item.display_name}
                           className={`object-contain ${
-                            isAffinityCategory ? 'w-10 h-10' : 'w-5 h-5'
+                            shouldEnlarge ? 'w-10 h-10' : 'w-5 h-5'
                           }`}
                         />
                       ) : (
