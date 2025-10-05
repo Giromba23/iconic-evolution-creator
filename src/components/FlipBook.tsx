@@ -113,43 +113,45 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
   }
 
   return (
-    <div className="flex justify-center items-center w-full py-8" style={{ perspective: "2000px" }}>
-      {/* @ts-ignore */}
-      <HTMLFlipBook
-        ref={bookRef}
-        width={1600}
-        height={700}
-        size="stretch"
-        minWidth={1400}
-        maxWidth={1600}
-        minHeight={600}
-        maxHeight={700}
-        showCover={false}
-        flippingTime={800}
-        usePortrait={false}
-        startPage={0}
-        drawShadow={true}
-        className="flipbook single-page"
-        style={{ margin: "0 auto" }}
-        maxShadowOpacity={0.5}
-        mobileScrollSupport={true}
-        startZIndex={0}
-        autoSize={false}
-        clickEventForward={true}
-        useMouseEvents={true}
-        swipeDistance={30}
-        showPageCorners={true}
-        disableFlipByClick={false}
-        onFlip={(e: any) => setCurrentPage(e.data)}
-      >
-        {entries.map((entry, index) => (
-          <Page 
-            key={entry.id} 
-            entry={entry} 
-            isVisible={index === currentPage || index === currentPage + 1}
-          />
-        ))}
-      </HTMLFlipBook>
+    <div className="flex justify-center items-center w-full py-8">
+      <div style={{ width: "1400px", maxWidth: "100%" }}>
+        {/* @ts-ignore */}
+        <HTMLFlipBook
+          ref={bookRef}
+          width={1400}
+          height={800}
+          size="fixed"
+          minWidth={1400}
+          maxWidth={1400}
+          minHeight={800}
+          maxHeight={800}
+          showCover={false}
+          flippingTime={800}
+          usePortrait={true}
+          startPage={0}
+          drawShadow={true}
+          className="flipbook single-page mx-auto"
+          style={{}}
+          maxShadowOpacity={0.5}
+          mobileScrollSupport={true}
+          startZIndex={0}
+          autoSize={false}
+          clickEventForward={true}
+          useMouseEvents={true}
+          swipeDistance={30}
+          showPageCorners={true}
+          disableFlipByClick={false}
+          onFlip={(e: any) => setCurrentPage(e.data)}
+        >
+          {entries.map((entry, index) => (
+            <Page 
+              key={entry.id} 
+              entry={entry} 
+              isVisible={index === currentPage}
+            />
+          ))}
+        </HTMLFlipBook>
+      </div>
       <style>{`
         .flipbook.single-page {
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
