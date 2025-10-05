@@ -140,20 +140,28 @@ export function FilterManager() {
   });
 
   const handleIconUpload = async (file: File, itemId: string) => {
+    console.log('🔄 Iniciando upload...', { fileName: file.name, fileSize: file.size, itemId });
+    
     try {
       setUploadingIcon(itemId);
+      toast.info('Fazendo upload...');
+      
       const iconUrl = await uploadIcon(file, itemId);
+      console.log('✅ Upload concluído, URL:', iconUrl);
+      
       await updateItemMutation.mutateAsync({ id: itemId, updates: { icon_url: iconUrl } });
+      console.log('✅ Banco atualizado');
     } catch (error: any) {
+      console.error('❌ Erro no upload:', error);
       toast.error(`Erro no upload: ${error.message}`);
     } finally {
       setUploadingIcon(null);
     }
   };
 
-  const filteredItems = selectedCategory
+  const currentCategoryItems = selectedCategory
     ? items.filter(i => i.category_id === selectedCategory)
-    : items;
+    : [];
 
   return (
     <Card>
@@ -195,12 +203,16 @@ export function FilterManager() {
 
               {/* Items list */}
               <div className="grid gap-3">
-                {filteredItems.map(item => (
+                {items
+                  .filter(item => item.category_id === category.id)
+                  .map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     {/* Icon preview */}
                     <div className="w-12 h-12 border rounded flex items-center justify-center bg-background">
-                      {item.icon_url ? (
-                        <img src={item.icon_url} alt={item.name} className="w-8 h-8" />
+                      {uploadingIcon === item.id ? (
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : item.icon_url ? (
+                        <img src={item.icon_url} alt={item.name} className="w-8 h-8 object-contain" />
                       ) : (
                         <span className="text-xs text-muted-foreground">Sem ícone</span>
                       )}
@@ -215,7 +227,12 @@ export function FilterManager() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <Label htmlFor={`upload-${item.id}`} className="cursor-pointer">
-                        <Button variant="outline" size="sm" asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          disabled={uploadingIcon === item.id}
+                          asChild
+                        >
                           <span>
                             <Upload className="w-4 h-4" />
                           </span>
@@ -223,11 +240,14 @@ export function FilterManager() {
                         <input
                           id={`upload-${item.id}`}
                           type="file"
-                          accept=".svg,.png,.jpg,.jpeg"
+                          accept=".svg,.png,.jpg,.jpeg,.webp"
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) handleIconUpload(file, item.id);
+                            if (file) {
+                              console.log('📁 Arquivo selecionado:', file);
+                              handleIconUpload(file, item.id);
+                            }
                           }}
                           disabled={uploadingIcon === item.id}
                         />
@@ -237,6 +257,7 @@ export function FilterManager() {
                         variant="outline"
                         size="sm"
                         onClick={() => deleteItemMutation.mutate(item.id)}
+                        disabled={uploadingIcon === item.id}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
