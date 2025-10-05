@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Trash2, Save, Plus } from "lucide-react";
+import { Upload, Trash2, Save, Plus, Edit2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface FilterCategory {
@@ -31,6 +31,9 @@ export function FilterManager() {
   const [newItemName, setNewItemName] = useState("");
   const [newItemDisplayName, setNewItemDisplayName] = useState("");
   const [uploadingIcon, setUploadingIcon] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDisplayName, setEditDisplayName] = useState("");
   const queryClient = useQueryClient();
 
   // Fetch categories
@@ -140,22 +143,46 @@ export function FilterManager() {
   });
 
   const handleIconUpload = async (file: File, itemId: string) => {
-    console.log('🔄 Iniciando upload...', { fileName: file.name, fileSize: file.size, itemId });
-    
     try {
       setUploadingIcon(itemId);
-      toast.info('Fazendo upload...');
-      
       const iconUrl = await uploadIcon(file, itemId);
-      console.log('✅ Upload concluído, URL:', iconUrl);
-      
       await updateItemMutation.mutateAsync({ id: itemId, updates: { icon_url: iconUrl } });
-      console.log('✅ Banco atualizado');
     } catch (error: any) {
-      console.error('❌ Erro no upload:', error);
       toast.error(`Erro no upload: ${error.message}`);
     } finally {
       setUploadingIcon(null);
+    }
+  };
+
+  const startEdit = (item: FilterItem) => {
+    setEditingItem(item.id);
+    setEditName(item.name);
+    setEditDisplayName(item.display_name);
+  };
+
+  const cancelEdit = () => {
+    setEditingItem(null);
+    setEditName("");
+    setEditDisplayName("");
+  };
+
+  const saveEdit = async (itemId: string) => {
+    if (!editName.trim() || !editDisplayName.trim()) {
+      toast.error("Nome e nome de exibição são obrigatórios");
+      return;
+    }
+
+    try {
+      await updateItemMutation.mutateAsync({ 
+        id: itemId, 
+        updates: { 
+          name: editName.trim(), 
+          display_name: editDisplayName.trim() 
+        } 
+      });
+      cancelEdit();
+    } catch (error) {
+      // Error already handled by mutation
     }
   };
 
@@ -208,7 +235,7 @@ export function FilterManager() {
                   .map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     {/* Icon preview */}
-                    <div className="w-12 h-12 border rounded flex items-center justify-center bg-background">
+                    <div className="w-12 h-12 border rounded flex items-center justify-center bg-background shrink-0">
                       {uploadingIcon === item.id ? (
                         <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                       ) : item.icon_url ? (
@@ -218,49 +245,93 @@ export function FilterManager() {
                       )}
                     </div>
 
-                    {/* Item info */}
-                    <div className="flex-1">
-                      <div className="font-medium">{item.display_name}</div>
-                      <div className="text-sm text-muted-foreground">{item.name}</div>
-                    </div>
+                    {/* Item info - editable */}
+                    {editingItem === item.id ? (
+                      <div className="flex-1 grid gap-2">
+                        <Input
+                          placeholder="Nome interno (ex: fire)"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="h-8"
+                        />
+                        <Input
+                          placeholder="Nome exibido (ex: Fire)"
+                          value={editDisplayName}
+                          onChange={(e) => setEditDisplayName(e.target.value)}
+                          className="h-8"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex-1">
+                        <div className="font-medium">{item.display_name}</div>
+                        <div className="text-sm text-muted-foreground">{item.name}</div>
+                      </div>
+                    )}
 
                     {/* Actions */}
-                    <div className="flex gap-2">
-                      <Label htmlFor={`upload-${item.id}`} className="cursor-pointer">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          disabled={uploadingIcon === item.id}
-                          asChild
-                        >
-                          <span>
-                            <Upload className="w-4 h-4" />
-                          </span>
-                        </Button>
-                        <input
-                          id={`upload-${item.id}`}
-                          type="file"
-                          accept=".svg,.png,.jpg,.jpeg,.webp"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              console.log('📁 Arquivo selecionado:', file);
-                              handleIconUpload(file, item.id);
-                            }
-                          }}
-                          disabled={uploadingIcon === item.id}
-                        />
-                      </Label>
+                    <div className="flex gap-2 shrink-0">
+                      {editingItem === item.id ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => saveEdit(item.id)}
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={cancelEdit}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startEdit(item)}
+                            disabled={uploadingIcon === item.id}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteItemMutation.mutate(item.id)}
-                        disabled={uploadingIcon === item.id}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                          <Label htmlFor={`upload-${item.id}`} className="cursor-pointer">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              disabled={uploadingIcon === item.id}
+                              asChild
+                            >
+                              <span>
+                                <Upload className="w-4 h-4" />
+                              </span>
+                            </Button>
+                            <input
+                              id={`upload-${item.id}`}
+                              type="file"
+                              accept=".svg,.png,.jpg,.jpeg,.webp"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleIconUpload(file, item.id);
+                              }}
+                              disabled={uploadingIcon === item.id}
+                            />
+                          </Label>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteItemMutation.mutate(item.id)}
+                            disabled={uploadingIcon === item.id}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
