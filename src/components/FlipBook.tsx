@@ -117,16 +117,16 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
       {/* @ts-ignore */}
       <HTMLFlipBook
         ref={bookRef}
-        width={960}
-        height={1200}
+        width={1400}
+        height={900}
         size="stretch"
-        minWidth={800}
-        maxWidth={960}
-        minHeight={1000}
-        maxHeight={1200}
+        minWidth={1200}
+        maxWidth={1400}
+        minHeight={800}
+        maxHeight={900}
         showCover={false}
         flippingTime={800}
-        usePortrait={true}
+        usePortrait={false}
         startPage={0}
         drawShadow={true}
         className="flipbook"
