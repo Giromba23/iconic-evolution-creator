@@ -86,6 +86,8 @@ export function HorizontalFilters({
                 
                 {categoryItems.map(item => {
                   const isSelected = selected.includes(item.name);
+                  const isAffinityCategory = category.name === 'affinity';
+                  const isClassCategory = category.name === 'class';
                   
                   return (
                     <Button
@@ -93,9 +95,15 @@ export function HorizontalFilters({
                       variant="outline"
                       size="sm"
                       onClick={() => onToggleItem(category.name, item.name)}
-                      className="rounded-lg transition-all h-10 px-3"
+                      className={`rounded-lg transition-all px-3 ${
+                        isAffinityCategory ? 'h-14' : 'h-10'
+                      }`}
                       style={{
-                        backgroundColor: isSelected ? category.icon_color : undefined,
+                        backgroundColor: isSelected 
+                          ? category.icon_color 
+                          : isClassCategory 
+                            ? '#110f24' 
+                            : undefined,
                         borderColor: isSelected ? category.icon_color : undefined,
                         color: isSelected ? 'white' : undefined
                       }}
@@ -105,7 +113,9 @@ export function HorizontalFilters({
                         <img 
                           src={item.icon_url} 
                           alt={item.display_name}
-                          className="w-5 h-5 object-contain"
+                          className={`object-contain ${
+                            isAffinityCategory ? 'w-10 h-10' : 'w-5 h-5'
+                          }`}
                         />
                       ) : (
                         <span className="text-xs font-medium">{item.display_name}</span>
