@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { EvolutionEntry } from "@/types/evolution";
 import { EvolutionForm } from "@/components/EvolutionForm";
+import { FilterManager } from "@/components/FilterManager";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, PlusCircle, ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, PlusCircle, ArrowLeft, BookOpen, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -100,7 +102,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <Settings className="w-8 h-8 text-[hsl(var(--encyclopedia-title))]" />
               <h1 className="encyclopedia-title text-4xl text-[hsl(var(--encyclopedia-title))]">
-                Dashboard - Gerenciar Evoluções
+                Dashboard
               </h1>
             </div>
             <Link to="/">
@@ -110,45 +112,68 @@ const Dashboard = () => {
               </Button>
             </Link>
           </div>
-          <p className="text-[hsl(var(--encyclopedia-subtitle))]">
-            Crie e edite suas entradas de evolução
-          </p>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          {entries.length > 0 && (
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium">Editar entrada:</label>
-              <Select 
-                value={selectedEntryId || "new"} 
-                onValueChange={(value) => setSelectedEntryId(value === "new" ? null : value)}
-              >
-                <SelectTrigger className="w-[300px]">
-                  <SelectValue placeholder="Selecione uma entrada" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">✨ Nova Entrada</SelectItem>
-                  {entries.map((entry) => (
-                    <SelectItem key={entry.id} value={entry.id}>
-                      {entry.title || "Sem título"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <Tabs defaultValue="entries" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="entries" className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              Entradas
+            </TabsTrigger>
+            <TabsTrigger value="filters" className="gap-2">
+              <Filter className="w-4 h-4" />
+              Filtros
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="entries" className="space-y-6">
+            <p className="text-[hsl(var(--encyclopedia-subtitle))]">
+              Crie e edite suas entradas de evolução
+            </p>
+
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              {entries.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium">Editar entrada:</label>
+                  <Select 
+                    value={selectedEntryId || "new"} 
+                    onValueChange={(value) => setSelectedEntryId(value === "new" ? null : value)}
+                  >
+                    <SelectTrigger className="w-[300px]">
+                      <SelectValue placeholder="Selecione uma entrada" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">✨ Nova Entrada</SelectItem>
+                      {entries.map((entry) => (
+                        <SelectItem key={entry.id} value={entry.id}>
+                          {entry.title || "Sem título"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <Button onClick={createNewEntry} variant="default">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Nova Entrada
+              </Button>
             </div>
-          )}
 
-          <Button onClick={createNewEntry} variant="default">
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Nova Entrada
-          </Button>
-        </div>
+            <EvolutionForm
+              key={selectedEntryId || "new"}
+              onSave={handleSaveEntry}
+              initialData={selectedEntryId ? selectedEntry : undefined}
+            />
+          </TabsContent>
 
-        <EvolutionForm
-          key={selectedEntryId || "new"}
-          onSave={handleSaveEntry}
-          initialData={selectedEntryId ? selectedEntry : undefined}
-        />
+          <TabsContent value="filters">
+            <p className="text-[hsl(var(--encyclopedia-subtitle))] mb-6">
+              Gerencie os filtros (Tier, Affinity, Class) e faça upload dos ícones SVG
+            </p>
+            <FilterManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
