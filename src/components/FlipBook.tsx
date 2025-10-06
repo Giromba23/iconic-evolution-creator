@@ -225,14 +225,22 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {coverImage && <CoverPage key="cover" imageUrl={coverImage} />}
-          {entries.map((entry, index) => (
-            <Page 
-              key={entry.id} 
-              entry={entry} 
-              isVisible={index === visibleEntryIndex}
-            />
-          ))}
+          {(() => {
+            const pages: JSX.Element[] = [];
+            if (coverImage) {
+              pages.push(<CoverPage key="cover" imageUrl={coverImage} />);
+            }
+            entries.forEach((entry, index) => {
+              pages.push(
+                <Page
+                  key={entry.id}
+                  entry={entry}
+                  isVisible={index === visibleEntryIndex}
+                />
+              );
+            });
+            return pages;
+          })()}
         </HTMLFlipBook>
 
         {/* Indicador de página */}
