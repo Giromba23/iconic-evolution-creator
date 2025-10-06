@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EvolutionEntry } from "@/types/evolution";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useTranslation } from "react-i18next";
-// Fixed: Removed VisualFilter component reference
+import coverImage from "@/assets/illuvipedia-cover.png";
 
 const Index = () => {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
@@ -148,7 +148,8 @@ const Index = () => {
               <div className="py-8">
                 <FlipBook 
                   key={`flipbook-${filteredEntries.length}-${JSON.stringify(selectedFilters)}`} 
-                  entries={filteredEntries} 
+                  entries={filteredEntries}
+                  coverImage={coverImage}
                 />
                 <div className="text-center mt-6 text-sm text-muted-foreground">
                   {t('dragToNavigate')}
