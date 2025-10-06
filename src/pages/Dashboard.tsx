@@ -5,7 +5,7 @@ import { FilterManager } from "@/components/FilterManager";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, PlusCircle, ArrowLeft, BookOpen, Filter } from "lucide-react";
+import { Settings, PlusCircle, ArrowLeft, BookOpen, Filter, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -83,6 +83,27 @@ const Dashboard = () => {
     },
   });
 
+  // Delete entry mutation
+  const deleteEntryMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      const { error } = await supabase
+        .from("evolution_entries")
+        .delete()
+        .eq("id", entryId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["evolution_entries"] });
+      setSelectedEntryId(null);
+      toast.success("Entrada deletada do catálogo!");
+    },
+    onError: (error) => {
+      console.error("Error deleting entry:", error);
+      toast.error("Erro ao deletar entrada");
+    },
+  });
+
   const selectedEntry = entries.find((e) => e.id === selectedEntryId);
 
   const handleSaveEntry = (entry: EvolutionEntry) => {
@@ -92,6 +113,14 @@ const Dashboard = () => {
 
   const createNewEntry = () => {
     setSelectedEntryId(null);
+  };
+
+  const handleDeleteEntry = () => {
+    if (!selectedEntryId) return;
+    
+    if (confirm("Tem certeza que deseja deletar esta entrada do catálogo? Esta ação não pode ser desfeita.")) {
+      deleteEntryMutation.mutate(selectedEntryId);
+    }
   };
 
   return (
@@ -154,10 +183,22 @@ const Dashboard = () => {
                 </div>
               )}
 
-              <Button onClick={createNewEntry} variant="default">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Nova Entrada
-              </Button>
+              <div className="flex gap-2">
+                {selectedEntryId && (
+                  <Button 
+                    onClick={handleDeleteEntry} 
+                    variant="destructive"
+                    disabled={deleteEntryMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Deletar Entrada
+                  </Button>
+                )}
+                <Button onClick={createNewEntry} variant="default">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Nova Entrada
+                </Button>
+              </div>
             </div>
 
             <EvolutionForm
