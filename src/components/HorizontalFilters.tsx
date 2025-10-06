@@ -170,13 +170,9 @@ export function HorizontalFilters({
                       onClick={() => onToggleItem(category.name, item.name)}
                       className="rounded-lg transition-all px-3 h-14 justify-start"
                       style={{
-                        backgroundColor: isSelected 
-                          ? category.icon_color 
-                          : groupKey === 'composite_class' 
-                            ? '#110f24' 
-                            : undefined,
+                        backgroundColor: isSelected ? category.icon_color : '#110f24',
                         borderColor: isSelected ? category.icon_color : undefined,
-                        color: isSelected ? 'white' : undefined
+                        color: 'white'
                       }}
                       title={item.display_name}
                     >
