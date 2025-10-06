@@ -70,39 +70,34 @@ const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry; isBlank?: boolean }>(({ entry, isBlank = false }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(entry ? entry.subtitle : '', entry ? `${entry.id}-subtitle` : '');
-  
-  if (isBlank) {
-    return (
-      <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-        <div className="w-full h-full" />
-      </div>
-    );
-  }
-
-  if (!entry) return null;
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
 
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-      <div className="w-full h-full flex flex-col">
-        <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-          {entry.title}
-        </h1>
-        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
-          {subtitle || entry.subtitle}
-        </h2>
+      <div className="page-surface">
+        <div className="page-face front">
+          <div className="w-full h-full flex flex-col">
+            <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+              {entry.title}
+            </h1>
+            <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
+              {subtitle || entry.subtitle}
+            </h2>
 
-        <div className="flex-1 flex items-start justify-center gap-4 px-2">
-          {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-center gap-3">
-              <TranslatedStage stage={stage} entryId={entry.id} />
-              {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
-              )}
+            <div className="flex-1 flex items-start justify-center gap-4 px-2">
+              {entry.stages.map((stage, index) => (
+                <div key={stage.id} className="flex items-center gap-3">
+                  <TranslatedStage stage={stage} entryId={entry.id} />
+                  {index < entry.stages.length - 1 && (
+                    <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
+        <div className="page-face back" />
       </div>
     </div>
   );
@@ -117,11 +112,8 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
     return null;
   }
 
-  // Criar array de páginas com IDs estáveis
-  const pages = entries.flatMap((entry, index) => [
-    { type: 'content' as const, entry, id: `front-${entry.id}`, entryIndex: index },
-    { type: 'blank' as const, entry: undefined, id: `back-${entry.id}`, entryIndex: index }
-  ]);
+  // Páginas com IDs estáveis (apenas frente); o verso será branco via CSS 3D
+  const pages = entries.map((entry) => ({ entry, id: entry.id }));
 
   return (
     <div className="flex justify-center items-center w-full py-8">
@@ -156,7 +148,6 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
             <Page 
               key={page.id}
               entry={page.entry}
-              isBlank={page.type === 'blank'}
             />
           ))}
         </HTMLFlipBook>
@@ -169,6 +160,10 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           background-size: cover;
           background-position: center;
         }
+        /* Frente/verso: verso em branco */
+        .page-surface { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+        .page-face { position: absolute; inset: 0; backface-visibility: hidden; }
+        .page-face.back { transform: rotateY(180deg); background: hsl(var(--card)); }
       `}</style>
     </div>
   );
