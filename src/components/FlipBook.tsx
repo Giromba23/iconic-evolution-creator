@@ -236,18 +236,16 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         </HTMLFlipBook>
 
         {/* Indicador de página */}
-        <div className="text-center mt-4">
-          <p className="text-sm text-muted-foreground">
-            {currentPage === 0 && coverImage ? (
-              t('flipbook.cover', 'Capa')
-            ) : (
-              t('flipbook.pageIndicator', 'Página {{current}} de {{total}}', { 
+        {!(currentPage === 0 && coverImage) && (
+          <div className="text-center mt-4">
+            <p className="text-sm text-muted-foreground">
+              {t('flipbook.pageIndicator', 'Página {{current}} de {{total}}', { 
                 current: coverImage ? currentPage : currentPage + 1, 
                 total: entries.length 
-              })
-            )}
-          </p>
-        </div>
+              })}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Botão de navegação direita */}
