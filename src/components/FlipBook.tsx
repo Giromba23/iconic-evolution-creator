@@ -122,12 +122,11 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
     return null;
   }
 
-  // Criar array de páginas alternando frente e verso em branco
-  const pages: Array<{ entry?: EvolutionEntry; isBlank: boolean; index: number }> = [];
-  entries.forEach((entry, index) => {
-    pages.push({ entry, isBlank: false, index });
-    pages.push({ isBlank: true, index }); // Verso em branco
-  });
+  // Criar array de páginas com IDs estáveis
+  const pages = entries.flatMap((entry, index) => [
+    { type: 'content' as const, entry, id: `front-${entry.id}`, entryIndex: index },
+    { type: 'blank' as const, entry: undefined, id: `back-${entry.id}`, entryIndex: index }
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full py-8">
@@ -160,12 +159,12 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {pages.map((page, idx) => (
+          {pages.map((page, pageIndex) => (
             <Page 
-              key={`page-${idx}`}
+              key={page.id}
               entry={page.entry}
-              isBlank={page.isBlank}
-              isVisible={idx === currentPage || idx === currentPage + 1}
+              isBlank={page.type === 'blank'}
+              isVisible={pageIndex === currentPage || pageIndex === currentPage + 1}
             />
           ))}
         </HTMLFlipBook>
