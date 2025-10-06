@@ -1,9 +1,12 @@
-import { useRef, forwardRef, useState } from "react";
+import { useRef, forwardRef, useState, useEffect } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
 import { useTranslateContent } from "@/hooks/useTranslateContent";
 import { useTranslation } from "react-i18next";
 import { translateTierLabel, translateStageLabel, translateTypeLabel } from "@/lib/translateControlled";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FlipBookProps {
   entries: EvolutionEntry[];
@@ -104,13 +107,68 @@ Page.displayName = "Page";
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const hasSeenHint = localStorage.getItem('flipbook-hint-seen');
+    if (!hasSeenHint) {
+      setShowHint(true);
+      const timer = setTimeout(() => {
+        setShowHint(false);
+        localStorage.setItem('flipbook-hint-seen', 'true');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const goToPreviousPage = () => {
+    if (bookRef.current && currentPage > 0) {
+      bookRef.current.pageFlip().flipPrev();
+    }
+  };
+
+  const goToNextPage = () => {
+    if (bookRef.current && currentPage < entries.length - 1) {
+      bookRef.current.pageFlip().flipNext();
+    }
+  };
 
   if (entries.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex justify-center items-center w-full py-8">
+    <div className="flex justify-center items-center w-full py-8 relative">
+      {/* Hint inicial */}
+      {showHint && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-6 py-3 rounded-lg shadow-lg animate-fade-in">
+          <p className="text-sm font-medium">
+            {t('flipbook.hint', 'Arraste para virar a página ou use as setas de navegação')}
+          </p>
+        </div>
+      )}
+
+      {/* Botão de navegação esquerda */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-40 h-12 w-12 rounded-full shadow-lg bg-background/90 backdrop-blur hover:bg-background"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>{t('flipbook.previous', 'Página anterior')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <div style={{ width: "1400px", maxWidth: "100%" }}>
         {/* @ts-ignore */}
         <HTMLFlipBook
@@ -148,7 +206,38 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
             />
           ))}
         </HTMLFlipBook>
+
+        {/* Indicador de página */}
+        <div className="text-center mt-4">
+          <p className="text-sm text-muted-foreground">
+            {t('flipbook.pageIndicator', 'Página {{current}} de {{total}}', { 
+              current: currentPage + 1, 
+              total: entries.length 
+            })}
+          </p>
+        </div>
       </div>
+
+      {/* Botão de navegação direita */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-40 h-12 w-12 rounded-full shadow-lg bg-background/90 backdrop-blur hover:bg-background"
+              onClick={goToNextPage}
+              disabled={currentPage === entries.length - 1}
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>{t('flipbook.next', 'Próxima página')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <style>{`
         .flipbook.single-page {
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
