@@ -76,10 +76,10 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean; isFlipping: boolean }>(({ entry, isVisible, isFlipping }, ref) => {
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>(({ entry, isVisible }, ref) => {
   const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
   return (
-    <div ref={ref} className={`page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl transition-opacity duration-200 ${isFlipping ? 'opacity-70' : 'opacity-100'}`}>
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
         <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
           {entry.title}
@@ -105,9 +105,9 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
 
 Page.displayName = "Page";
 
-const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string; isFlipping: boolean }>(({ imageUrl, isFlipping }, ref) => {
+const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string }>(({ imageUrl }, ref) => {
   return (
-    <div ref={ref} className={`page bg-[hsl(var(--encyclopedia-card))] shadow-2xl overflow-hidden transition-opacity duration-200 ${isFlipping ? 'opacity-70' : 'opacity-100'}`}>
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] shadow-2xl overflow-hidden">
       <img 
         src={imageUrl} 
         alt="Book Cover" 
@@ -123,7 +123,6 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [isFlipping, setIsFlipping] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -158,7 +157,7 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
 // Prepare pages array
   const pages = [];
   if (coverImage) {
-    pages.push(<CoverPage key="cover" imageUrl={coverImage} isFlipping={isFlipping} />);
+    pages.push(<CoverPage key="cover" imageUrl={coverImage} />);
   }
   entries.forEach((entry, index) => {
     pages.push(
@@ -166,13 +165,12 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         key={entry.id} 
         entry={entry} 
         isVisible={index === (coverImage ? currentPage - 1 : currentPage)}
-        isFlipping={isFlipping}
       />
     );
   });
 
   return (
-    <div className="flex justify-center items-center w-full py-8 relative" onMouseDown={() => setIsFlipping(true)} onMouseUp={() => setIsFlipping(false)} onTouchStart={() => setIsFlipping(true)} onTouchEnd={() => setIsFlipping(false)}>
+    <div className="flex justify-center items-center w-full py-8 relative">
       {/* Hint inicial */}
       {showHint && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-6 py-3 rounded-lg shadow-lg animate-fade-in">
@@ -229,11 +227,7 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           swipeDistance={30}
           showPageCorners={true}
           disableFlipByClick={false}
-          onFlip={(e: any) => { setCurrentPage(e.data); setIsFlipping(false); }}
-          onChangeState={(e: any) => {
-            const state = (e && typeof e === 'object') ? (e as any).data : e;
-            setIsFlipping(state !== 'read');
-          }}
+          onFlip={(e: any) => setCurrentPage(e.data)}
         >
           {pages}
         </HTMLFlipBook>
@@ -280,25 +274,6 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         .page {
           background-size: cover;
           background-position: center;
-        }
-        
-        /* Força transparência durante a virada de página */
-        .stf__item--hard.--left .stf__hardInner,
-        .stf__item--hard.--right .stf__hardInner {
-          opacity: 0.7 !important;
-          transition: opacity 0.3s ease-out !important;
-        }
-        
-        .stf__item--hard.--left:hover .stf__hardInner,
-        .stf__item--hard.--right:hover .stf__hardInner {
-          opacity: 0.5 !important;
-        }
-        
-        /* Durante a animação de flip */
-        .stf__item.--flipping .stf__hardInner,
-        .stf__item.--flipping .page {
-          opacity: 0.6 !important;
-          transition: opacity 0.4s ease-out !important;
         }
       `}</style>
     </div>
