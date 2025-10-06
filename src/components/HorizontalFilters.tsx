@@ -77,64 +77,63 @@ export function HorizontalFilters({
     const categoryItems = items[category.name] || [];
     const selected = selectedItems[category.name] || [];
     const isAllSelected = selected.length === 0;
+    const isAffinityCategory = category.name === 'affinity';
+    const isClassCategory = category.name === 'class';
+    const isTierCategory = category.name === 'tier';
 
     return (
-      <div key={category.id} className="space-y-3">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={isAllSelected ? "default" : "outline"}
-            size="sm"
-            onClick={() => onClearCategory(category.name)}
-            className="rounded-lg transition-all"
-            style={{
-              backgroundColor: isAllSelected ? category.icon_color : undefined,
-              borderColor: isAllSelected ? category.icon_color : undefined
-            }}
-          >
-            All
-          </Button>
+      <div key={category.id} className="flex flex-wrap gap-2 items-center">
+        <Button
+          variant={isAllSelected ? "default" : "outline"}
+          size="sm"
+          onClick={() => onClearCategory(category.name)}
+          className="rounded-lg transition-all"
+          style={{
+            backgroundColor: isAllSelected ? category.icon_color : undefined,
+            borderColor: isAllSelected ? category.icon_color : undefined
+          }}
+        >
+          All
+        </Button>
+        
+        {categoryItems.map(item => {
+          const isSelected = selected.includes(item.name);
+          const shouldEnlarge = isAffinityCategory || isClassCategory;
           
-          {categoryItems.map(item => {
-            const isSelected = selected.includes(item.name);
-            const isAffinityCategory = category.name === 'affinity';
-            const isClassCategory = category.name === 'class';
-            const shouldEnlarge = isAffinityCategory || isClassCategory;
-            
-            return (
-              <Button
-                key={item.id}
-                variant="outline"
-                size="sm"
-                onClick={() => onToggleItem(category.name, item.name)}
-                className={`rounded-lg transition-all px-3 ${
-                  shouldEnlarge ? 'h-14' : 'h-10'
-                }`}
-                style={{
-                  backgroundColor: isSelected 
-                    ? category.icon_color 
-                    : isClassCategory 
-                      ? '#110f24' 
-                      : undefined,
-                  borderColor: isSelected ? category.icon_color : undefined,
-                  color: isSelected ? 'white' : undefined
-                }}
-                title={item.display_name}
-              >
-                {item.icon_url ? (
-                  <img 
-                    src={item.icon_url} 
-                    alt={item.display_name}
-                    className={`object-contain ${
-                      shouldEnlarge ? 'w-10 h-10' : 'w-5 h-5'
-                    }`}
-                  />
-                ) : (
-                  <span className="text-xs font-medium">{item.display_name}</span>
-                )}
-              </Button>
-            );
-          })}
-        </div>
+          return (
+            <Button
+              key={item.id}
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleItem(category.name, item.name)}
+              className={`rounded-lg transition-all px-3 ${
+                shouldEnlarge ? 'h-14' : 'h-10'
+              }`}
+              style={{
+                backgroundColor: isSelected 
+                  ? category.icon_color 
+                  : isClassCategory 
+                    ? '#110f24' 
+                    : undefined,
+                borderColor: isSelected ? category.icon_color : undefined,
+                color: isSelected ? 'white' : undefined
+              }}
+              title={item.display_name}
+            >
+              {item.icon_url ? (
+                <img 
+                  src={item.icon_url} 
+                  alt={item.display_name}
+                  className={`object-contain ${
+                    shouldEnlarge ? 'w-10 h-10' : 'w-5 h-5'
+                  }`}
+                />
+              ) : (
+                <span className="text-xs font-medium">{item.display_name}</span>
+              )}
+            </Button>
+          );
+        })}
       </div>
     );
   };
@@ -156,7 +155,7 @@ export function HorizontalFilters({
 
       {/* Filter Groups */}
       <div className="space-y-3">
-        {filterGroups.map((group, index) => {
+        {filterGroups.map((group) => {
           const groupKey = group.title.toLowerCase().replace(/\s+/g, '_');
           const isOpen = openGroups[groupKey] ?? false;
           
@@ -181,7 +180,7 @@ export function HorizontalFilters({
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent>
-                  <div className="p-6 pt-2 space-y-6">
+                  <div className="p-6 pt-2 space-y-4">
                     {group.categories.map(renderCategory)}
                   </div>
                 </CollapsibleContent>
