@@ -49,5 +49,21 @@ export default {
       shadow: "Shadow",
       light: "Light",
     },
+    
+    // Flipbook navigation
+    flipbook: {
+      hint: "Drag to flip pages or use the navigation arrows",
+      previous: "Previous page",
+      next: "Next page",
+      pageIndicator: "Page {{current}} of {{total}}",
+    },
+    
+    // Filters
+    filters: {
+      all: "All",
+      clearAll: "Clear All Filters",
+      resultFound: "result found",
+      resultsFound: "results found",
+    },
   }
 };

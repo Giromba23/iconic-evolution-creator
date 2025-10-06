@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { X, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,6 +42,7 @@ export function HorizontalFilters({
   onClearAll,
   totalResults
 }: HorizontalFiltersProps) {
+  const { t } = useTranslation();
   const hasActiveFilters = Object.values(selectedItems).some(arr => arr.length > 0);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     primary: true,
@@ -80,7 +82,7 @@ export function HorizontalFilters({
               borderColor: isAllSelected ? tierCategory.icon_color : undefined
             }}
           >
-            All
+            {t('filters.all')}
           </Button>
           
           {categoryItems.map(item => {
@@ -154,7 +156,7 @@ export function HorizontalFilters({
                     borderColor: isAllSelected ? category.icon_color : undefined
                   }}
                 >
-                  All
+                  {t('filters.all')}
                 </Button>
               </div>
               
@@ -209,7 +211,7 @@ export function HorizontalFilters({
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full px-6 py-2 flex items-center gap-2"
           >
             <X className="w-4 h-4" />
-            Clear All Filters
+            {t('filters.clearAll')}
           </Button>
         </div>
       )}
@@ -226,7 +228,7 @@ export function HorizontalFilters({
 
       {/* Results Counter */}
       <div className="text-center text-sm text-muted-foreground">
-        {totalResults} {totalResults === 1 ? 'resultado encontrado' : 'resultados encontrados'}
+        {totalResults} {totalResults === 1 ? t('filters.resultFound') : t('filters.resultsFound')}
       </div>
     </div>
   );
