@@ -225,28 +225,14 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {coverImage ? (
-            <>
-              <CoverPage key="cover" imageUrl={coverImage} />
-              {entries.map((entry, index) => (
-                <Page 
-                  key={entry.id} 
-                  entry={entry} 
-                  isVisible={index === visibleEntryIndex}
-                />
-              ))}
-            </>
-          ) : (
-            <>
-              {entries.map((entry, index) => (
-                <Page 
-                  key={entry.id} 
-                  entry={entry} 
-                  isVisible={index === currentPage}
-                />
-              ))}
-            </>
-          )}
+          {coverImage && <CoverPage key="cover" imageUrl={coverImage} />}
+          {entries.map((entry, index) => (
+            <Page 
+              key={entry.id} 
+              entry={entry} 
+              isVisible={index === visibleEntryIndex}
+            />
+          ))}
         </HTMLFlipBook>
 
         {/* Indicador de página */}
