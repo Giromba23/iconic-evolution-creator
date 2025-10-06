@@ -212,19 +212,19 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           minHeight={800}
           maxHeight={800}
           showCover={false}
-          flippingTime={800}
-          usePortrait={true}
+          flippingTime={600}
+          usePortrait={false}
           startPage={0}
           drawShadow={true}
           className="flipbook single-page mx-auto"
           style={{}}
-          maxShadowOpacity={0.5}
+          maxShadowOpacity={0.8}
           mobileScrollSupport={true}
           startZIndex={0}
           autoSize={false}
-          clickEventForward={true}
+          clickEventForward={false}
           useMouseEvents={true}
-          swipeDistance={30}
+          swipeDistance={10}
           showPageCorners={true}
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
