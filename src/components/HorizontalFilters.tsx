@@ -46,8 +46,8 @@ export function HorizontalFilters({
   const hasActiveFilters = Object.values(selectedItems).some(arr => arr.length > 0);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     primary: true,
-    composite_affinity: false,
-    composite_class: false,
+    composite_affinity: true,
+    composite_class: true,
   });
 
   // Separate tier category
