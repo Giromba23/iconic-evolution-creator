@@ -212,19 +212,19 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           minHeight={800}
           maxHeight={800}
           showCover={false}
-          flippingTime={400}
-          usePortrait={false}
+          flippingTime={800}
+          usePortrait={true}
           startPage={0}
           drawShadow={true}
           className="flipbook single-page mx-auto"
           style={{}}
-          maxShadowOpacity={0.9}
+          maxShadowOpacity={0.5}
           mobileScrollSupport={true}
           startZIndex={0}
           autoSize={false}
-          clickEventForward={false}
+          clickEventForward={true}
           useMouseEvents={true}
-          swipeDistance={5}
+          swipeDistance={30}
           showPageCorners={true}
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
@@ -274,15 +274,6 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         .page {
           background-size: cover;
           background-position: center;
-        }
-        
-        /* Aumenta o efeito de transparência durante a virada */
-        .stf__wrapper .stf__block {
-          transition: opacity 0.2s ease-out;
-        }
-        
-        .stf__wrapper .stf__item.--flipping {
-          opacity: 0.7;
         }
       `}</style>
     </div>
