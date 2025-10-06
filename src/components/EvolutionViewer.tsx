@@ -9,11 +9,9 @@ interface EvolutionViewerProps {
 
 const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) => {
   const { t } = useTranslation();
-  const { translatedText: name } = useTranslateContent(stage.name, `${entryId}-${stage.id}-name`);
   const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
-  const translatedTypes = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
 
   return (
     <div className="flex-1 min-w-[280px] max-w-[350px] text-center p-4 bg-[hsl(var(--encyclopedia-card))] border border-[hsl(var(--encyclopedia-border))] rounded-md shadow-sm">
@@ -21,7 +19,7 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
         {stage.imageUrl ? (
           <img
             src={stage.imageUrl}
-            alt={name}
+            alt={stage.name}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -30,11 +28,11 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
       </div>
 
       <h3 className="encyclopedia-title text-2xl mb-3 text-[hsl(var(--encyclopedia-title))]">
-        {name}
+        {stage.name}
       </h3>
 
       <div className="inline-block border border-[hsl(var(--encyclopedia-border))] px-3 py-1 mb-4 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))]">
-        {tierLabel} | {stageLabel} | {translatedTypes.join(" | ")}
+        {tierLabel} | {stageLabel} | {stage.types.join(" | ")}
       </div>
 
       <div
@@ -46,13 +44,12 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
 };
 
 export const EvolutionViewer = ({ entry }: EvolutionViewerProps) => {
-  const { translatedText: title } = useTranslateContent(entry.title, `${entry.id}-title`);
   const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-8 bg-[hsl(var(--encyclopedia-card))] rounded-lg shadow-lg border border-[hsl(var(--encyclopedia-border))]">
       <h1 className="encyclopedia-title text-3xl md:text-4xl text-center mb-2 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-        {title}
+        {entry.title}
       </h1>
       <h2 className="encyclopedia-title text-lg text-center mb-10 text-[hsl(var(--encyclopedia-subtitle))] italic">
         {subtitle}

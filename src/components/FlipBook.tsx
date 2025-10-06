@@ -17,11 +17,9 @@ interface TranslatedStageProps {
 const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
   const { t } = useTranslation();
   // Traduz apenas se visível
-  const { translatedText: name } = useTranslateContent(isVisible ? stage.name : '', `${entryId}-${stage.id}-name`);
   const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
-  const typeLabels = (stage.types || []).map((type: string) => translateTypeLabel(type, t));
 
   return (
     <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
@@ -36,14 +34,14 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
             >
               <img
                 src={stage.imageUrl}
-                alt={isVisible ? name : stage.name}
+                alt={stage.name}
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
               />
             </a>
           ) : (
             <img
               src={stage.imageUrl}
-              alt={isVisible ? name : stage.name}
+              alt={stage.name}
               className="w-full h-full object-cover"
             />
           )
@@ -56,11 +54,11 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
 
       <div className="p-4">
         <h3 className="encyclopedia-title text-xl mb-2 text-center text-[hsl(var(--encyclopedia-title))]">
-          {isVisible && name ? name : stage.name}
+          {stage.name}
         </h3>
 
         <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-2 py-1 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
-          {tierLabel} | {stageLabel} | {typeLabels.join(" | ")}
+          {tierLabel} | {stageLabel} | {stage.types.join(" | ")}
         </div>
 
         <div 
@@ -75,13 +73,12 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
 };
 
 const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>(({ entry, isVisible }, ref) => {
-  const { translatedText: title } = useTranslateContent(isVisible ? entry.title : '', `${entry.id}-title`);
   const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
         <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-          {title || entry.title}
+          {entry.title}
         </h1>
         <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
           {subtitle || entry.subtitle}
