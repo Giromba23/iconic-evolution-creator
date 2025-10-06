@@ -154,20 +154,8 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
     return null;
   }
 
-// Prepare pages array
-  const pages = [];
-  if (coverImage) {
-    pages.push(<CoverPage key="cover" imageUrl={coverImage} />);
-  }
-  entries.forEach((entry, index) => {
-    pages.push(
-      <Page 
-        key={entry.id} 
-        entry={entry} 
-        isVisible={index === (coverImage ? currentPage - 1 : currentPage)}
-      />
-    );
-  });
+  // Calculate which entry page is visible (accounting for cover)
+  const visibleEntryIndex = coverImage ? currentPage - 1 : currentPage;
 
   return (
     <div className="flex justify-center items-center w-full py-8 relative">
@@ -229,7 +217,14 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {pages}
+          {coverImage && <CoverPage key="cover" imageUrl={coverImage} />}
+          {entries.map((entry, index) => (
+            <Page 
+              key={entry.id} 
+              entry={entry} 
+              isVisible={index === visibleEntryIndex}
+            />
+          ))}
         </HTMLFlipBook>
 
         {/* Indicador de página */}
