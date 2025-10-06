@@ -12,8 +12,8 @@ i18n
       es,
       pt,
     },
-    lng: 'pt', // idioma padrão
-    fallbackLng: 'pt',
+    lng: 'en', // idioma padrão em inglês
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
     },

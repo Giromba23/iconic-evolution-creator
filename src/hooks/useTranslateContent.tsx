@@ -32,8 +32,8 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
         return;
       }
 
-      // Portuguese is the source language - always return original text immediately
-      if (i18n.language === 'pt') {
+      // English is the source language - always return original text immediately
+      if (i18n.language === 'en') {
         setTranslatedText(trimmedText);
         setIsTranslating(false);
         return;
