@@ -1,9 +1,9 @@
-import { useRef, forwardRef, useState } from "react";
+import { useRef, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
 import { useTranslateContent } from "@/hooks/useTranslateContent";
 import { useTranslation } from "react-i18next";
-import { translateTierLabel, translateStageLabel, translateTypeLabel } from "@/lib/translateControlled";
+import { translateTierLabel, translateStageLabel } from "@/lib/translateControlled";
 
 interface FlipBookProps {
   entries: EvolutionEntry[];
@@ -12,12 +12,10 @@ interface FlipBookProps {
 interface TranslatedStageProps {
   stage: any;
   entryId: string;
-  isVisible: boolean;
 }
-const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
+const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
   const { t } = useTranslation();
-  // Traduz apenas se visível
-  const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
+  const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
 
@@ -64,7 +62,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
         <div 
           className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
           dangerouslySetInnerHTML={{ 
-            __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
+            __html: description
           }}
         />
       </div>
@@ -72,15 +70,13 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry; isVisible: boolean; isBlank?: boolean }>(({ entry, isVisible, isBlank = false }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(isVisible && entry ? entry.subtitle : '', entry ? `${entry.id}-subtitle` : '');
+const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry; isBlank?: boolean }>(({ entry, isBlank = false }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(entry ? entry.subtitle : '', entry ? `${entry.id}-subtitle` : '');
   
   if (isBlank) {
     return (
       <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="text-muted-foreground/20 text-sm">Verso da página</div>
-        </div>
+        <div className="w-full h-full" />
       </div>
     );
   }
@@ -100,7 +96,7 @@ const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry; isVisible: boo
         <div className="flex-1 flex items-start justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-3">
-              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
+              <TranslatedStage stage={stage} entryId={entry.id} />
               {index < entry.stages.length - 1 && (
                 <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
               )}
@@ -116,7 +112,6 @@ Page.displayName = "Page";
 
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
-  const [currentPage, setCurrentPage] = useState(0);
 
   if (entries.length === 0) {
     return null;
@@ -156,15 +151,12 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
-          disableFlipByClick={false}
-          onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {pages.map((page, pageIndex) => (
+          {pages.map((page) => (
             <Page 
               key={page.id}
               entry={page.entry}
               isBlank={page.type === 'blank'}
-              isVisible={pageIndex === currentPage || pageIndex === currentPage + 1}
             />
           ))}
         </HTMLFlipBook>
