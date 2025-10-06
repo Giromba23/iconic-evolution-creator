@@ -107,13 +107,17 @@ Page.displayName = "Page";
 
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
+  const lastIndexRef = useRef(0);
 
   if (entries.length === 0) {
     return null;
   }
 
-  // Páginas com IDs estáveis (apenas frente); o verso será branco via CSS 3D
-  const pages = entries.map((entry) => ({ entry, id: entry.id }));
+  // Alterna: conteúdo + verso em branco (página ímpar)
+  const pages = entries.flatMap((entry) => [
+    { type: 'content' as const, entry, id: `front-${entry.id}` },
+    { type: 'blank' as const, id: `back-${entry.id}` },
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full py-8">
@@ -143,12 +147,22 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
+          onFlip={(e: any) => {
+            const idx = typeof e?.data === 'number' ? e.data : 0;
+            const api = bookRef.current?.pageFlip ? bookRef.current.pageFlip() : bookRef.current;
+            if (pages[idx]?.type === 'blank' && api) {
+              if (idx > lastIndexRef.current) api.turnToNextPage();
+              else api.turnToPrevPage();
+            }
+            lastIndexRef.current = idx;
+          }}
         >
           {pages.map((page) => (
-            <Page 
-              key={page.id}
-              entry={page.entry}
-            />
+            page.type === 'blank' ? (
+              <div key={page.id} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl"><div className="w-full h-full" /></div>
+            ) : (
+              <Page key={page.id} entry={page.entry!} />
+            )
           ))}
         </HTMLFlipBook>
       </div>
