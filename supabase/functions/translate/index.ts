@@ -40,11 +40,31 @@ serve(async (req) => {
     const SEP = "<<<SEP>>>";
     const messages = texts && texts.length > 0
       ? [
-          { role: "system", content: `You are a translator. Translate each segment separated by ${SEP} into ${languageNames[targetLanguage] || targetLanguage}. Return ONLY the translated segments joined by ${SEP}, same order, same count. Preserve HTML tags and formatting; do not alter numbers.` },
+          { 
+            role: "system", 
+            content: `You are a professional translator. Translate each text segment separated by ${SEP} into ${languageNames[targetLanguage] || targetLanguage}.
+CRITICAL RULES:
+- Return ONLY the translated segments joined by ${SEP}
+- Same order and same count as input
+- Keep similar text length (avoid making translations much longer)
+- Preserve HTML tags exactly as they are (like <strong>, <em>, etc)
+- Do NOT add XML tags like <spellPassiveDescription>
+- Do NOT add explanations or formatting
+- Maintain numbers and game terms unchanged`
+          },
           { role: "user", content: texts.join(SEP) },
         ]
       : [
-          { role: "system", content: `You are a translator. Translate to ${languageNames[targetLanguage] || targetLanguage}. Return ONLY the translated text, no quotes, no explanations. Preserve HTML tags and formatting.` },
+          { 
+            role: "system", 
+            content: `You are a professional translator. Translate to ${languageNames[targetLanguage] || targetLanguage}.
+CRITICAL RULES:
+- Return ONLY the translated text
+- Keep similar length to original (avoid bloating text)
+- Preserve HTML tags exactly
+- No quotes, no explanations, no XML tags
+- Maintain numbers and game terms`
+          },
           { role: "user", content: text as string },
         ];
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -84,11 +104,17 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content as string | undefined;
+    let content = data.choices?.[0]?.message?.content as string | undefined;
 
     if (!content) {
       throw new Error("No translation received");
     }
+
+    // Clean up any unwanted XML tags or formatting
+    content = content
+      .replace(/<\/?spellPassiveDescription>/gi, '') // Remove spell tags
+      .replace(/<\/?[a-z]+Description>/gi, '') // Remove any *Description tags
+      .trim();
 
     if (texts && texts.length > 0) {
       const parts = content.split(SEP).map((s: string) => s.trim());

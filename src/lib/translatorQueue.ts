@@ -1,7 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
-// Cache simples em memória
-const cache: Record<string, string> = {};
+// Cache com expiração (30 minutos)
+const cache: Record<string, { text: string; timestamp: number }> = {};
+const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
 
 // Pendências por idioma
 type Pending = { text: string; resolve: (s: string) => void; reject: (e: any) => void };
@@ -13,6 +14,17 @@ const SEP = '\n<<<SEP>>>'; // separador estável
 function cacheKey(text: string, lang: string) {
   return `${lang}::${text}`;
 }
+
+// Limpar cache expirado periodicamente
+setInterval(() => {
+  const now = Date.now();
+  Object.keys(cache).forEach(key => {
+    if (now - cache[key].timestamp > CACHE_DURATION) {
+      delete cache[key];
+    }
+  });
+}, 1000 * 60 * 5); // Limpar a cada 5 minutos
+
 
 async function flush(lang: string) {
   const pendings = pendingByLang[lang];
@@ -27,10 +39,14 @@ async function flush(lang: string) {
 
   for (const p of pendings) {
     const key = cacheKey(p.text, lang);
-    if (cache[key]) {
-      p.resolve(cache[key]);
+    const cached = cache[key];
+    
+    // Verificar cache com timestamp
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      p.resolve(cached.text);
       continue;
     }
+    
     if (mapIndex[p.text] === undefined) {
       mapIndex[p.text] = texts.length;
       texts.push(p.text);
@@ -53,18 +69,20 @@ async function flush(lang: string) {
       ? [data.translatedText]
       : [];
 
-    // Armazena em cache por texto deduplicado
+    // Armazena em cache com timestamp
+    const now = Date.now();
     texts.forEach((t, i) => {
       const out = translatedTexts[i] ?? t;
-      cache[cacheKey(t, lang)] = out;
+      cache[cacheKey(t, lang)] = { text: out, timestamp: now };
     });
 
     // Resolve cada pending na ordem
     let idx = 0;
     for (const p of pendings) {
       const key = cacheKey(p.text, lang);
-      if (cache[key]) {
-        p.resolve(cache[key]);
+      const cached = cache[key];
+      if (cached) {
+        p.resolve(cached.text);
       } else {
         const mapped = translatedTexts[positions[idx] ?? 0] ?? p.text;
         p.resolve(mapped);
@@ -79,16 +97,25 @@ async function flush(lang: string) {
 
 export function translateBatch(text: string, lang: string): Promise<string> {
   if (!text) return Promise.resolve('');
-  const key = cacheKey(text, lang);
-  if (cache[key]) return Promise.resolve(cache[key]);
+  
+  // Trim para evitar cache miss por espaços
+  const trimmedText = text.trim();
+  const key = cacheKey(trimmedText, lang);
+  
+  // Verificar cache com timestamp
+  const cached = cache[key];
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return Promise.resolve(cached.text);
+  }
 
   return new Promise((resolve, reject) => {
     pendingByLang[lang] = pendingByLang[lang] || [];
-    pendingByLang[lang].push({ text, resolve, reject });
+    pendingByLang[lang].push({ text: trimmedText, resolve, reject });
 
-    // Micro-batch a cada 120ms por idioma
+    // Batching mais rápido: 80ms para lotes pequenos, 150ms para grandes
     if (!scheduled[lang]) {
-      scheduled[lang] = window.setTimeout(() => flush(lang), 120);
+      const delay = pendingByLang[lang].length > 5 ? 150 : 80;
+      scheduled[lang] = window.setTimeout(() => flush(lang), delay);
     }
   });
 }
