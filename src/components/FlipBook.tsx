@@ -1,9 +1,9 @@
-import { useRef, forwardRef } from "react";
+import { useRef, forwardRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
 import { useTranslateContent } from "@/hooks/useTranslateContent";
 import { useTranslation } from "react-i18next";
-import { translateTierLabel, translateStageLabel } from "@/lib/translateControlled";
+import { translateTierLabel, translateStageLabel, translateTypeLabel } from "@/lib/translateControlled";
 
 interface FlipBookProps {
   entries: EvolutionEntry[];
@@ -12,10 +12,12 @@ interface FlipBookProps {
 interface TranslatedStageProps {
   stage: any;
   entryId: string;
+  isVisible: boolean;
 }
-const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
+const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
   const { t } = useTranslation();
-  const { translatedText: description } = useTranslateContent(stage.description, `${entryId}-${stage.id}-desc`);
+  // Traduz apenas se visível
+  const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
 
@@ -62,7 +64,7 @@ const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
         <div 
           className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
           dangerouslySetInnerHTML={{ 
-            __html: description
+            __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
           }}
         />
       </div>
@@ -70,9 +72,8 @@ const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
-
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>(({ entry, isVisible }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
@@ -86,7 +87,7 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, r
         <div className="flex-1 flex items-start justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-3">
-              <TranslatedStage stage={stage} entryId={entry.id} />
+              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               {index < entry.stages.length - 1 && (
                 <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
               )}
@@ -102,6 +103,7 @@ Page.displayName = "Page";
 
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   if (entries.length === 0) {
     return null;
@@ -135,18 +137,26 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
+          disableFlipByClick={false}
+          onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {entries.map((entry) => (
-            <Page key={entry.id} entry={entry} />
+          {entries.map((entry, index) => (
+            <Page 
+              key={entry.id} 
+              entry={entry} 
+              isVisible={index === currentPage}
+            />
           ))}
         </HTMLFlipBook>
       </div>
       <style>{`
-        .flipbook.single-page { box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .page { background-size: cover; background-position: center; }
-        /* Força verso branco: oculta conteúdo renderizado no lado traseiro */
-        .flipbook .stf__item--back .stf__content { background: hsl(var(--encyclopedia-card)); }
-        .flipbook .stf__item--back .stf__content > * { display: none !important; }
+        .flipbook.single-page {
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .page {
+          background-size: cover;
+          background-position: center;
+        }
       `}</style>
     </div>
   );
