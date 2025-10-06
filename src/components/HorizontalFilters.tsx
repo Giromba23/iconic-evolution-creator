@@ -32,11 +32,6 @@ interface HorizontalFiltersProps {
   totalResults: number;
 }
 
-interface FilterGroup {
-  title: string;
-  categories: FilterCategory[];
-}
-
 export function HorizontalFilters({
   categories,
   items,
@@ -53,88 +48,158 @@ export function HorizontalFilters({
     composite_class: false,
   });
 
-  // Group categories by their group_category
-  const filterGroups: FilterGroup[] = [
-    {
-      title: "PRIMARY",
-      categories: categories.filter(c => c.group_category === 'primary' || !c.group_category),
-    },
-    {
-      title: "COMPOSITE AFFINITY",
-      categories: categories.filter(c => c.group_category === 'composite_affinity'),
-    },
-    {
-      title: "COMPOSITE CLASS",
-      categories: categories.filter(c => c.group_category === 'composite_class'),
-    },
-  ].filter(group => group.categories.length > 0);
+  // Separate tier category
+  const tierCategory = categories.find(c => c.name === 'tier');
+  
+  // Get the 3 main filter groups (excluding tier)
+  const primaryCategory = categories.find(c => c.name === 'primary');
+  const compositeAffinityCategory = categories.find(c => c.name === 'composite_affinity');
+  const compositeClassCategory = categories.find(c => c.name === 'composite_class');
 
   const toggleGroup = (groupKey: string) => {
     setOpenGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
   };
 
-  const renderCategory = (category: FilterCategory) => {
+  const renderTierFilter = () => {
+    if (!tierCategory) return null;
+    
+    const categoryItems = items[tierCategory.name] || [];
+    const selected = selectedItems[tierCategory.name] || [];
+    const isAllSelected = selected.length === 0;
+
+    return (
+      <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+        <div className="flex flex-wrap gap-2 items-center">
+          <Button
+            variant={isAllSelected ? "default" : "outline"}
+            size="sm"
+            onClick={() => onClearCategory(tierCategory.name)}
+            className="rounded-lg transition-all"
+            style={{
+              backgroundColor: isAllSelected ? tierCategory.icon_color : undefined,
+              borderColor: isAllSelected ? tierCategory.icon_color : undefined
+            }}
+          >
+            All
+          </Button>
+          
+          {categoryItems.map(item => {
+            const isSelected = selected.includes(item.name);
+            
+            return (
+              <Button
+                key={item.id}
+                variant="outline"
+                size="sm"
+                onClick={() => onToggleItem(tierCategory.name, item.name)}
+                className="rounded-lg transition-all px-3 h-10"
+                style={{
+                  backgroundColor: isSelected ? tierCategory.icon_color : undefined,
+                  borderColor: isSelected ? tierCategory.icon_color : undefined,
+                  color: isSelected ? 'white' : undefined
+                }}
+                title={item.display_name}
+              >
+                <span className="text-xs font-medium">{item.display_name}</span>
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderFilterGroup = (
+    category: FilterCategory | undefined,
+    groupKey: string,
+    title: string
+  ) => {
+    if (!category) return null;
+    
     const categoryItems = items[category.name] || [];
     const selected = selectedItems[category.name] || [];
     const isAllSelected = selected.length === 0;
-    const isAffinityCategory = category.name === 'affinity';
-    const isClassCategory = category.name === 'class';
-    const isTierCategory = category.name === 'tier';
+    const isOpen = openGroups[groupKey] ?? false;
 
     return (
-      <div key={category.id} className="flex flex-wrap gap-2 items-center">
-        <Button
-          variant={isAllSelected ? "default" : "outline"}
-          size="sm"
-          onClick={() => onClearCategory(category.name)}
-          className="rounded-lg transition-all"
-          style={{
-            backgroundColor: isAllSelected ? category.icon_color : undefined,
-            borderColor: isAllSelected ? category.icon_color : undefined
-          }}
-        >
-          All
-        </Button>
-        
-        {categoryItems.map(item => {
-          const isSelected = selected.includes(item.name);
-          const shouldEnlarge = isAffinityCategory || isClassCategory;
+      <Collapsible
+        key={groupKey}
+        open={isOpen}
+        onOpenChange={() => toggleGroup(groupKey)}
+      >
+        <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 overflow-hidden">
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+              <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                {title}
+              </h2>
+              <ChevronDown 
+                className={`w-5 h-5 text-muted-foreground transition-transform ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </div>
+          </CollapsibleTrigger>
           
-          return (
-            <Button
-              key={item.id}
-              variant="outline"
-              size="sm"
-              onClick={() => onToggleItem(category.name, item.name)}
-              className={`rounded-lg transition-all px-3 ${
-                shouldEnlarge ? 'h-14' : 'h-10'
-              }`}
-              style={{
-                backgroundColor: isSelected 
-                  ? category.icon_color 
-                  : isClassCategory 
-                    ? '#110f24' 
-                    : undefined,
-                borderColor: isSelected ? category.icon_color : undefined,
-                color: isSelected ? 'white' : undefined
-              }}
-              title={item.display_name}
-            >
-              {item.icon_url ? (
-                <img 
-                  src={item.icon_url} 
-                  alt={item.display_name}
-                  className={`object-contain ${
-                    shouldEnlarge ? 'w-10 h-10' : 'w-5 h-5'
-                  }`}
-                />
-              ) : (
-                <span className="text-xs font-medium">{item.display_name}</span>
-              )}
-            </Button>
-          );
-        })}
-      </div>
+          <CollapsibleContent>
+            <div className="p-6 pt-2">
+              <div className="flex gap-2 mb-3">
+                <Button
+                  variant={isAllSelected ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onClearCategory(category.name)}
+                  className="rounded-lg transition-all"
+                  style={{
+                    backgroundColor: isAllSelected ? category.icon_color : undefined,
+                    borderColor: isAllSelected ? category.icon_color : undefined
+                  }}
+                >
+                  All
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                {categoryItems.map(item => {
+                  const isSelected = selected.includes(item.name);
+                  
+                  return (
+                    <Button
+                      key={item.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onToggleItem(category.name, item.name)}
+                      className="rounded-lg transition-all px-3 h-14 justify-start"
+                      style={{
+                        backgroundColor: isSelected 
+                          ? category.icon_color 
+                          : groupKey === 'composite_class' 
+                            ? '#110f24' 
+                            : undefined,
+                        borderColor: isSelected ? category.icon_color : undefined,
+                        color: isSelected ? 'white' : undefined
+                      }}
+                      title={item.display_name}
+                    >
+                      {item.icon_url ? (
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={item.icon_url} 
+                            alt={item.display_name}
+                            className="w-10 h-10 object-contain"
+                          />
+                          <span className="text-xs font-medium">{item.display_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-medium">{item.display_name}</span>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
     );
   };
 
@@ -153,41 +218,14 @@ export function HorizontalFilters({
         </div>
       )}
 
-      {/* Filter Groups */}
-      <div className="space-y-3">
-        {filterGroups.map((group) => {
-          const groupKey = group.title.toLowerCase().replace(/\s+/g, '_');
-          const isOpen = openGroups[groupKey] ?? false;
-          
-          return (
-            <Collapsible
-              key={groupKey}
-              open={isOpen}
-              onOpenChange={() => toggleGroup(groupKey)}
-            >
-              <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 overflow-hidden">
-                <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-                    <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
-                      {group.title}
-                    </h2>
-                    <ChevronDown 
-                      className={`w-5 h-5 text-muted-foreground transition-transform ${
-                        isOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                </CollapsibleTrigger>
-                
-                <CollapsibleContent>
-                  <div className="p-6 pt-2 space-y-4">
-                    {group.categories.map(renderCategory)}
-                  </div>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-          );
-        })}
+      {/* Tier Filter - Isolated */}
+      {renderTierFilter()}
+
+      {/* Filter Groups in Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {renderFilterGroup(primaryCategory, 'primary', 'PRIMARY')}
+        {renderFilterGroup(compositeAffinityCategory, 'composite_affinity', 'COMPOSITE AFFINITY')}
+        {renderFilterGroup(compositeClassCategory, 'composite_class', 'COMPOSITE CLASS')}
       </div>
 
       {/* Results Counter */}
