@@ -70,42 +70,29 @@ const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry }>(({ entry }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(entry?.subtitle ?? '', entry ? `${entry.id}-subtitle` : 'blank');
-
-  if (!entry) {
-    return (
-      <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-        <div className="w-full h-full" />
-      </div>
-    );
-  }
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
 
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-      <div className="page-surface">
-        <div className="page-face front">
-          <div className="w-full h-full flex flex-col">
-            <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-              {entry.title}
-            </h1>
-            <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
-              {subtitle || entry.subtitle}
-            </h2>
+      <div className="w-full h-full flex flex-col">
+        <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+          {entry.title}
+        </h1>
+        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
+          {subtitle || entry.subtitle}
+        </h2>
 
-            <div className="flex-1 flex items-start justify-center gap-4 px-2">
-              {entry.stages.map((stage, index) => (
-                <div key={stage.id} className="flex items-center gap-3">
-                  <TranslatedStage stage={stage} entryId={entry.id} />
-                  {index < entry.stages.length - 1 && (
-                    <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
-                  )}
-                </div>
-              ))}
+        <div className="flex-1 flex items-start justify-center gap-4 px-2">
+          {entry.stages.map((stage, index) => (
+            <div key={stage.id} className="flex items-center gap-3">
+              <TranslatedStage stage={stage} entryId={entry.id} />
+              {index < entry.stages.length - 1 && (
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
+              )}
             </div>
-          </div>
+          ))}
         </div>
-        <div className="page-face back" />
       </div>
     </div>
   );
@@ -115,17 +102,10 @@ Page.displayName = "Page";
 
 export const FlipBook = ({ entries }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
-  const lastIndexRef = useRef(0);
 
   if (entries.length === 0) {
     return null;
   }
-
-  // Alterna: conteúdo + verso em branco (página ímpar)
-  const pages = entries.flatMap((entry) => [
-    { type: 'content' as const, entry, id: `front-${entry.id}` },
-    { type: 'blank' as const, id: `back-${entry.id}` },
-  ]);
 
   return (
     <div className="flex justify-center items-center w-full py-8">
@@ -155,37 +135,18 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
-          onFlip={(e: any) => {
-            const idx = typeof e?.data === 'number' ? e.data : 0;
-            const api = bookRef.current?.pageFlip ? bookRef.current.pageFlip() : bookRef.current;
-            if (pages[idx]?.type === 'blank' && api) {
-              if (idx > lastIndexRef.current) api.turnToNextPage();
-              else api.turnToPrevPage();
-            }
-            lastIndexRef.current = idx;
-          }}
         >
-          {pages.map((page) => (
-            page.type === 'blank' ? (
-              <div key={page.id} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl"><div className="w-full h-full" /></div>
-            ) : (
-              <Page key={page.id} entry={page.entry!} />
-            )
+          {entries.map((entry) => (
+            <Page key={entry.id} entry={entry} />
           ))}
         </HTMLFlipBook>
       </div>
       <style>{`
-        .flipbook.single-page {
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        .page {
-          background-size: cover;
-          background-position: center;
-        }
-        /* Frente/verso: verso em branco */
-        .page-surface { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
-        .page-face { position: absolute; inset: 0; backface-visibility: hidden; }
-        .page-face.back { transform: rotateY(180deg); background: hsl(var(--card)); }
+        .flipbook.single-page { box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .page { background-size: cover; background-position: center; }
+        /* Força verso branco: oculta conteúdo renderizado no lado traseiro */
+        .flipbook .stf__item--back .stf__content { background: hsl(var(--encyclopedia-card)); }
+        .flipbook .stf__item--back .stf__content > * { display: none !important; }
       `}</style>
     </div>
   );
