@@ -1,3 +1,4 @@
+// FlipBook component with page flip animation
 import { useRef, forwardRef, useState, useEffect } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { EvolutionEntry } from "@/types/evolution";
