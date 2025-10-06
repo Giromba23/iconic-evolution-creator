@@ -70,8 +70,16 @@ const TranslatedStage = ({ stage, entryId }: TranslatedStageProps) => {
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry }>(({ entry }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(entry.subtitle, `${entry.id}-subtitle`);
+const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry }>(({ entry }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(entry?.subtitle ?? '', entry ? `${entry.id}-subtitle` : 'blank');
+
+  if (!entry) {
+    return (
+      <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
+        <div className="w-full h-full" />
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
