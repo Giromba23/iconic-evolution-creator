@@ -275,6 +275,25 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           background-size: cover;
           background-position: center;
         }
+        
+        /* Força transparência durante a virada de página */
+        .stf__item--hard.--left .stf__hardInner,
+        .stf__item--hard.--right .stf__hardInner {
+          opacity: 0.7 !important;
+          transition: opacity 0.3s ease-out !important;
+        }
+        
+        .stf__item--hard.--left:hover .stf__hardInner,
+        .stf__item--hard.--right:hover .stf__hardInner {
+          opacity: 0.5 !important;
+        }
+        
+        /* Durante a animação de flip */
+        .stf__item.--flipping .stf__hardInner,
+        .stf__item.--flipping .page {
+          opacity: 0.6 !important;
+          transition: opacity 0.4s ease-out !important;
+        }
       `}</style>
     </div>
   );
