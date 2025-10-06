@@ -144,7 +144,8 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
   };
 
   const goToNextPage = () => {
-    if (bookRef.current && currentPage < entries.length - 1) {
+    const totalPages = coverImage ? entries.length : entries.length - 1;
+    if (bookRef.current && currentPage < totalPages) {
       bookRef.current.pageFlip().flipNext();
     }
   };
@@ -152,6 +153,21 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
   if (entries.length === 0) {
     return null;
   }
+
+  // Prepare pages array
+  const pages = [];
+  if (coverImage) {
+    pages.push(<CoverPage key="cover" imageUrl={coverImage} />);
+  }
+  entries.forEach((entry, index) => {
+    pages.push(
+      <Page 
+        key={entry.id} 
+        entry={entry} 
+        isVisible={index === (coverImage ? currentPage - 1 : currentPage)}
+      />
+    );
+  });
 
   return (
     <div className="flex justify-center items-center w-full py-8 relative">
@@ -213,14 +229,7 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {coverImage && <CoverPage imageUrl={coverImage} />}
-          {entries.map((entry, index) => (
-            <Page 
-              key={entry.id} 
-              entry={entry} 
-              isVisible={index === (coverImage ? currentPage - 1 : currentPage)}
-            />
-          ))}
+          {pages}
         </HTMLFlipBook>
 
         {/* Indicador de página */}
