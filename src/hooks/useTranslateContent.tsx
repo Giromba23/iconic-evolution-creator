@@ -32,17 +32,18 @@ export const useTranslateContent = (text: string, fieldKey: string) => {
         return;
       }
 
+      // Portuguese is the source language - always return original text immediately
+      if (i18n.language === 'pt') {
+        setTranslatedText(trimmedText);
+        setIsTranslating(false);
+        return;
+      }
+
       const cacheKey = `${fieldKey}-${trimmedText}`;
       
       // Check cache first
       if (translationCache[cacheKey]?.[i18n.language]) {
         setTranslatedText(translationCache[cacheKey][i18n.language]);
-        return;
-      }
-
-      // Don't translate if language is Portuguese (source language)
-      if (i18n.language === 'pt') {
-        setTranslatedText(trimmedText);
         return;
       }
 
