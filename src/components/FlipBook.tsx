@@ -72,8 +72,21 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>(({ entry, isVisible }, ref) => {
-  const { translatedText: subtitle } = useTranslateContent(isVisible ? entry.subtitle : '', `${entry.id}-subtitle`);
+const Page = forwardRef<HTMLDivElement, { entry?: EvolutionEntry; isVisible: boolean; isBlank?: boolean }>(({ entry, isVisible, isBlank = false }, ref) => {
+  const { translatedText: subtitle } = useTranslateContent(isVisible && entry ? entry.subtitle : '', entry ? `${entry.id}-subtitle` : '');
+  
+  if (isBlank) {
+    return (
+      <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="text-muted-foreground/20 text-sm">Verso da página</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!entry) return null;
+
   return (
     <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
       <div className="w-full h-full flex flex-col">
@@ -109,6 +122,13 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
     return null;
   }
 
+  // Criar array de páginas alternando frente e verso em branco
+  const pages: Array<{ entry?: EvolutionEntry; isBlank: boolean; index: number }> = [];
+  entries.forEach((entry, index) => {
+    pages.push({ entry, isBlank: false, index });
+    pages.push({ isBlank: true, index }); // Verso em branco
+  });
+
   return (
     <div className="flex justify-center items-center w-full py-8">
       <div style={{ width: "1400px", maxWidth: "100%" }}>
@@ -140,11 +160,12 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
-          {entries.map((entry, index) => (
+          {pages.map((page, idx) => (
             <Page 
-              key={entry.id} 
-              entry={entry} 
-              isVisible={index === currentPage}
+              key={`page-${idx}`}
+              entry={page.entry}
+              isBlank={page.isBlank}
+              isVisible={idx === currentPage || idx === currentPage + 1}
             />
           ))}
         </HTMLFlipBook>
