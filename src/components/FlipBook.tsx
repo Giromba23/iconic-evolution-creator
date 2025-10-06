@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface FlipBookProps {
   entries: EvolutionEntry[];
+  coverImage?: string;
 }
 
 interface TranslatedStageProps {
@@ -104,7 +105,21 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
 
 Page.displayName = "Page";
 
-export const FlipBook = ({ entries }: FlipBookProps) => {
+const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string }>(({ imageUrl }, ref) => {
+  return (
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] shadow-2xl overflow-hidden">
+      <img 
+        src={imageUrl} 
+        alt="Book Cover" 
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+});
+
+CoverPage.displayName = "CoverPage";
+
+export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -198,11 +213,12 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
         >
+          {coverImage && <CoverPage imageUrl={coverImage} />}
           {entries.map((entry, index) => (
             <Page 
               key={entry.id} 
               entry={entry} 
-              isVisible={index === currentPage}
+              isVisible={index === (coverImage ? currentPage - 1 : currentPage)}
             />
           ))}
         </HTMLFlipBook>
@@ -210,10 +226,14 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
         {/* Indicador de página */}
         <div className="text-center mt-4">
           <p className="text-sm text-muted-foreground">
-            {t('flipbook.pageIndicator', 'Página {{current}} de {{total}}', { 
-              current: currentPage + 1, 
-              total: entries.length 
-            })}
+            {currentPage === 0 && coverImage ? (
+              t('flipbook.cover', 'Capa')
+            ) : (
+              t('flipbook.pageIndicator', 'Página {{current}} de {{total}}', { 
+                current: coverImage ? currentPage : currentPage + 1, 
+                total: entries.length 
+              })
+            )}
           </p>
         </div>
       </div>
@@ -227,7 +247,7 @@ export const FlipBook = ({ entries }: FlipBookProps) => {
               size="icon"
               className="absolute right-4 top-1/2 -translate-y-1/2 z-40 h-12 w-12 rounded-full shadow-lg bg-background/90 backdrop-blur hover:bg-background"
               onClick={goToNextPage}
-              disabled={currentPage === entries.length - 1}
+              disabled={currentPage === (coverImage ? entries.length : entries.length - 1)}
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
