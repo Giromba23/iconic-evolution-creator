@@ -76,48 +76,48 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   );
 };
 
-const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean; hideContent?: boolean }>(
-  ({ entry, isVisible, hideContent = false }, ref) => {
-    const { translatedText: subtitle } = useTranslateContent(
-      isVisible ? entry.subtitle : '',
-      `${entry.id}-subtitle`
-    );
-    return (
-      <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
-        <div className={"w-full h-full flex flex-col transition-opacity duration-200 " + (hideContent ? "opacity-0" : "opacity-100")}>
-          <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
-            {entry.title}
-          </h1>
-          <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
-            {subtitle || entry.subtitle}
-          </h2>
+const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>((
+  { entry, isVisible }, ref
+) => {
+  const { translatedText: subtitle } = useTranslateContent(
+    isVisible ? entry.subtitle : '',
+    `${entry.id}-subtitle`
+  );
+  return (
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
+      <div className="w-full h-full flex flex-col">
+        <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+          {entry.title}
+        </h1>
+        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
+          {subtitle || entry.subtitle}
+        </h2>
 
-          <div className="flex-1 flex items-start justify-center gap-4 px-2">
-            {entry.stages.map((stage, index) => (
-              <div key={stage.id} className="flex items-center gap-3">
-                <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
-                {index < entry.stages.length - 1 && (
-                  <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="flex-1 flex items-start justify-center gap-4 px-2">
+          {entry.stages.map((stage, index) => (
+            <div key={stage.id} className="flex items-center gap-3">
+              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
+              {index < entry.stages.length - 1 && (
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
-    );
-  }
-);
+    </div>
+  );
+});
 
 Page.displayName = "Page";
 
-const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string; hideContent?: boolean }>(
-  ({ imageUrl, hideContent = false }, ref) => {
+const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string }>(
+  ({ imageUrl }, ref) => {
     return (
       <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] shadow-2xl overflow-hidden">
         <img 
           src={imageUrl} 
           alt="Book Cover" 
-          className={"w-full h-full object-cover transition-opacity duration-200 " + (hideContent ? "opacity-0" : "opacity-100")}
+          className="w-full h-full object-cover"
         />
       </div>
     );
@@ -130,7 +130,6 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
   const bookRef = useRef<any>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [isFlipping, setIsFlipping] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -224,23 +223,13 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           showPageCorners={true}
           disableFlipByClick={false}
           onFlip={(e: any) => setCurrentPage(e.data)}
-          onChangeState={(e: any) => setIsFlipping(e.data !== 'read')}
         >
-          {coverImage && (
-            <CoverPage key="cover" imageUrl={coverImage} hideContent={isFlipping && currentPage === 0} />
-          )}
+          {coverImage && <CoverPage key="cover" imageUrl={coverImage} />}
           {entries.map((entry, index) => (
             <Page 
               key={entry.id} 
               entry={entry} 
               isVisible={index === visibleEntryIndex}
-              hideContent={
-                isFlipping && (
-                  index === visibleEntryIndex ||
-                  index === visibleEntryIndex + 1 ||
-                  (coverImage && currentPage === 0 && index === 0)
-                )
-              }
             />
           ))}
         </HTMLFlipBook>
@@ -287,6 +276,18 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         .page {
           background-size: cover;
           background-position: center;
+        }
+        /* Avoid ghosting on slow flips: hide only the content of the page that is currently flipping */
+        .flipbook .stf__page,
+        .flipbook .stf__content,
+        .flipbook .stf__item {
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+        }
+        .flipbook .stf__item.--flipping .stf__content,
+        .flipbook .stf__item.--flipping .page {
+          opacity: 0;
+          transition: opacity 150ms ease-out;
         }
       `}</style>
     </div>
