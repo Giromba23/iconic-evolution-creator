@@ -1,8 +1,8 @@
 export default {
   translation: {
     // Header
-    title: "Enciclopedia de Evoluciones",
-    subtitle: "Explora el catálogo de evoluciones de criaturas",
+    title: "Illuvipedia",
+    subtitle: "Illuvials",
     dashboard: "Panel",
     
     // Filters
