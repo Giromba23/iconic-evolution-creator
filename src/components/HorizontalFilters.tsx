@@ -7,6 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { categorizeType } from "@/config/filterIcons";
 
 interface FilterCategory {
   id: string;
@@ -123,6 +124,57 @@ export function HorizontalFilters({
     const isAllSelected = selected.length === 0;
     const isOpen = openGroups[groupKey] ?? false;
 
+    // Check if this is the PRIMARY category that needs to be split
+    const isPrimary = category.name === 'primary';
+    
+    // Separate items by affinity and class if PRIMARY
+    const affinityItems = isPrimary ? categoryItems.filter(item => categorizeType(item.name) === 'affinity') : [];
+    const classItems = isPrimary ? categoryItems.filter(item => categorizeType(item.name) === 'class') : [];
+
+    const renderItemGrid = (itemsToRender: FilterItem[], subtitle?: string) => (
+      <div>
+        {subtitle && (
+          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-2">
+            {subtitle}
+          </h3>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          {itemsToRender.map(item => {
+            const isSelected = selected.includes(item.name);
+            
+            return (
+              <Button
+                key={item.id}
+                variant="outline"
+                size="sm"
+                onClick={() => onToggleItem(category.name, item.name)}
+                className="rounded-lg transition-all px-3 h-14 justify-start"
+                style={{
+                  backgroundColor: isSelected ? category.icon_color : '#110f24',
+                  borderColor: isSelected ? category.icon_color : undefined,
+                  color: 'white'
+                }}
+                title={item.display_name}
+              >
+                {item.icon_url ? (
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={item.icon_url} 
+                      alt={item.display_name}
+                      className="w-10 h-10 object-contain"
+                    />
+                    <span className="text-xs font-medium">{item.display_name}</span>
+                  </div>
+                ) : (
+                  <span className="text-xs font-medium">{item.display_name}</span>
+                )}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+
     return (
       <Collapsible
         key={groupKey}
@@ -160,40 +212,14 @@ export function HorizontalFilters({
                 </Button>
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
-                {categoryItems.map(item => {
-                  const isSelected = selected.includes(item.name);
-                  
-                  return (
-                    <Button
-                      key={item.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onToggleItem(category.name, item.name)}
-                      className="rounded-lg transition-all px-3 h-14 justify-start"
-                      style={{
-                        backgroundColor: isSelected ? category.icon_color : '#110f24',
-                        borderColor: isSelected ? category.icon_color : undefined,
-                        color: 'white'
-                      }}
-                      title={item.display_name}
-                    >
-                      {item.icon_url ? (
-                        <div className="flex items-center gap-2">
-                          <img 
-                            src={item.icon_url} 
-                            alt={item.display_name}
-                            className="w-10 h-10 object-contain"
-                          />
-                          <span className="text-xs font-medium">{item.display_name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs font-medium">{item.display_name}</span>
-                      )}
-                    </Button>
-                  );
-                })}
-              </div>
+              {isPrimary ? (
+                <div className="space-y-4">
+                  {renderItemGrid(affinityItems, 'PRIMARY AFFINITY')}
+                  {renderItemGrid(classItems, 'PRIMARY CLASS')}
+                </div>
+              ) : (
+                renderItemGrid(categoryItems)
+              )}
             </div>
           </CollapsibleContent>
         </div>
