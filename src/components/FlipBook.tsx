@@ -207,7 +207,7 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           maxWidth={1400}
           minHeight={800}
           maxHeight={800}
-          showCover={true}
+          showCover={!!coverImage}
           flippingTime={800}
           usePortrait={true}
           startPage={0}
