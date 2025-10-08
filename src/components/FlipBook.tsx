@@ -27,7 +27,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const stageLabel = translateStageLabel(stage.stage, t);
 
   return (
-    <div className="flex flex-col w-full max-w-[280px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
+    <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
         {stage.imageUrl ? (
           stage.link ? (
