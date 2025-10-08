@@ -27,8 +27,8 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const stageLabel = translateStageLabel(stage.stage, t);
 
   return (
-    <div className="flex flex-col w-full h-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
-      <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))] flex-shrink-0">
+    <div className="flex flex-col w-full max-w-[280px] border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
+      <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
         {stage.imageUrl ? (
           stage.link ? (
             <a 
@@ -61,17 +61,17 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
         )}
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
+      <div className="p-4">
         <h3 className="encyclopedia-title text-xl mb-2 text-center text-[hsl(var(--encyclopedia-title))]">
           {stage.name}
         </h3>
 
-        <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-2 py-1 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded flex-shrink-0">
+        <div className="text-center border border-[hsl(var(--encyclopedia-border))] px-2 py-1 mb-3 encyclopedia-body text-xs text-[hsl(var(--encyclopedia-text))] bg-[hsl(var(--encyclopedia-badge-bg))] rounded">
           {tierLabel} | {stageLabel} | {stage.types.join(" | ")}
         </div>
 
         <div 
-          className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed overflow-hidden"
+          className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
           dangerouslySetInnerHTML={{ 
             __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
           }}
@@ -98,14 +98,12 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
           {subtitle || entry.subtitle}
         </h2>
 
-        <div className="flex-1 flex items-stretch justify-center gap-4 px-2">
+        <div className="flex-1 flex items-start justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-stretch gap-3 flex-1">
-              <div className="flex-1 flex">
-                <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
-              </div>
+            <div key={stage.id} className="flex items-center gap-3">
+              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center flex-shrink-0">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
               )}
             </div>
           ))}
