@@ -91,7 +91,7 @@ const Index = () => {
 
   // Filter entries
   const filteredEntries = useMemo(() => {
-    return entries.filter(entry => {
+    const filtered = entries.filter(entry => {
       return categories.every(category => {
         const selected = selectedFilters[category.name] || [];
         if (selected.length === 0) return true;
@@ -105,6 +105,15 @@ const Index = () => {
           }
         });
       });
+    });
+
+    // Sort by tier (extract tier number from first stage)
+    return filtered.sort((a, b) => {
+      const getTier = (entry: EvolutionEntry) => {
+        const tierMatch = entry.stages[0]?.tier?.match(/\d+/);
+        return tierMatch ? parseInt(tierMatch[0]) : 999;
+      };
+      return getTier(a) - getTier(b);
     });
   }, [entries, categories, selectedFilters]);
 
