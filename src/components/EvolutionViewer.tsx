@@ -15,11 +15,13 @@ const TranslatedStage = ({ stage, entryId }: { stage: any; entryId: string }) =>
 
   return (
     <div className="flex-1 min-w-[280px] max-w-[350px] text-center p-4 bg-[hsl(var(--encyclopedia-card))] border border-[hsl(var(--encyclopedia-border))] rounded-md shadow-sm">
-      <div className="w-full h-[200px] mb-4 border border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--encyclopedia-card))] rounded flex items-center justify-center overflow-hidden">
+      <div className="w-full h-[200px] mb-4 border border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--muted))] rounded flex items-center justify-center overflow-hidden">
         {stage.imageUrl ? (
           <img
             src={stage.imageUrl}
             alt={stage.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         ) : (

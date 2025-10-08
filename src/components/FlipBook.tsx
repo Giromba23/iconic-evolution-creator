@@ -28,7 +28,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
 
   return (
     <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
-      <div className="w-full aspect-[16/9] overflow-hidden">
+      <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
         {stage.imageUrl ? (
           stage.link ? (
             <a 
@@ -40,6 +40,8 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
               <img
                 src={stage.imageUrl}
                 alt={stage.name}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
               />
             </a>
@@ -47,6 +49,8 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
             <img
               src={stage.imageUrl}
               alt={stage.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           )
@@ -117,7 +121,9 @@ const CoverPage = forwardRef<HTMLDivElement, { imageUrl: string }>(
       <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] shadow-2xl overflow-hidden">
         <img 
           src={imageUrl} 
-          alt="Book Cover" 
+          alt="Book Cover"
+          loading="eager"
+          decoding="async"
           className="w-full h-full object-cover"
         />
       </div>
