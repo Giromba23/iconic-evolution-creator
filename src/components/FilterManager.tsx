@@ -78,7 +78,9 @@ export function FilterManager() {
       .from('filter-icons')
       .getPublicUrl(filePath);
 
-    return publicUrl;
+    // Add timestamp to bust cache
+    const timestamp = new Date().getTime();
+    return `${publicUrl}?t=${timestamp}`;
   };
 
   // Update item mutation
