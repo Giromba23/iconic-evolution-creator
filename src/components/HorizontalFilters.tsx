@@ -247,7 +247,7 @@ export function HorizontalFilters({
 
       {/* Filter Groups in Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {renderFilterGroup(primaryCategory, 'primary', 'PRIMARY')}
+        {renderFilterGroup(primaryCategory, 'primary', 'PRIMARY SYNERGIES')}
         {renderFilterGroup(compositeAffinityCategory, 'composite_affinity', 'COMPOSITE AFFINITY')}
         {renderFilterGroup(compositeClassCategory, 'composite_class', 'COMPOSITE CLASS')}
       </div>
