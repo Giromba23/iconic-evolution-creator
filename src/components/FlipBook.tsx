@@ -71,7 +71,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
         </div>
 
         <div 
-          className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed"
+          className="encyclopedia-body text-xs text-left text-[hsl(var(--encyclopedia-text))] leading-relaxed clamp-3"
           dangerouslySetInnerHTML={{ 
             __html: isVisible && description ? description : stage.description.replace(/<[^>]*>/g, '')
           }}
@@ -289,6 +289,13 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
         .page {
           background-size: cover;
           background-position: center;
+        }
+        /* Clamp long descriptions to align card heights */
+        .flipbook .clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         /* Hide back of pages completely - no mirroring */
         .flipbook .stf__page,
