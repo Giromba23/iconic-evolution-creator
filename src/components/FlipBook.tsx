@@ -284,17 +284,28 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           background-size: cover;
           background-position: center;
         }
-        /* Avoid ghosting on slow flips: hide only the content of the page that is currently flipping */
+        /* Hide back of pages completely - no mirroring */
         .flipbook .stf__page,
         .flipbook .stf__content,
         .flipbook .stf__item {
           -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
         }
-        .flipbook .stf__item.--flipping .stf__content,
-        .flipbook .stf__item.--flipping .page {
-          opacity: 0;
-          transition: opacity 150ms ease-out;
+        /* Hide the back face of pages */
+        .flipbook .stf__page.--back {
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+        .flipbook .stf__page.--back .page,
+        .flipbook .stf__page.--back .stf__content {
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+        /* During flip, hide content for clean transition */
+        .flipbook .stf__item.--flipping .stf__page.--back,
+        .flipbook .stf__item.--flipping .stf__page.--back * {
+          opacity: 0 !important;
+          visibility: hidden !important;
         }
       `}</style>
     </div>
