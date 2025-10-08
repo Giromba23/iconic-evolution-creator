@@ -27,7 +27,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const stageLabel = translateStageLabel(stage.stage, t);
 
   return (
-    <div className="flex flex-col h-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
+    <div className="flex flex-col border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
         {stage.imageUrl ? (
           stage.link ? (
@@ -100,7 +100,7 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
 
         <div className="flex-1 flex items-stretch justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className={`flex items-stretch gap-3 flex-1 ${index === 2 ? '-mt-2' : ''}`}>
+            <div key={stage.id} className={`flex items-stretch gap-3 flex-1 ${index === 2 ? '-mt-6' : ''}`}>
               <div className="flex-1">
                 <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               </div>
