@@ -25,10 +25,9 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
-  const imageClass = `w-full h-full object-cover ${stage.stage === 3 ? 'object-[center_40%]' : 'object-center'}`;
 
   return (
-    <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
+    <div className="flex flex-col h-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
         {stage.imageUrl ? (
           stage.link ? (
@@ -43,7 +42,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
                 alt={stage.name}
                 loading="lazy"
                 decoding="async"
-                className={`${imageClass} transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer`}
+                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
               />
             </a>
           ) : (
@@ -52,7 +51,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
               alt={stage.name}
               loading="lazy"
               decoding="async"
-              className={imageClass}
+              className="w-full h-full object-cover"
             />
           )
         ) : (
@@ -99,12 +98,14 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
           {subtitle || entry.subtitle}
         </h2>
 
-        <div className="flex-1 flex items-start justify-center gap-4 px-2">
+        <div className="flex-1 flex items-stretch justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-center gap-3">
-              <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
+            <div key={stage.id} className="flex items-stretch gap-3 flex-1">
+              <div className="flex-1">
+                <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
+              </div>
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center">→</div>
               )}
             </div>
           ))}
