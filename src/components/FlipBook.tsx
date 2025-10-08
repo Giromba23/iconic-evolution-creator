@@ -25,6 +25,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
   const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
+  const imageClass = `w-full h-full object-cover ${stage.stage === 3 ? 'object-[center_40%]' : 'object-center'}`;
 
   return (
     <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
@@ -42,7 +43,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
                 alt={stage.name}
                 loading="lazy"
                 decoding="async"
-                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer"
+                className={`${imageClass} transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer`}
               />
             </a>
           ) : (
@@ -51,7 +52,7 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
               alt={stage.name}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover"
+              className={imageClass}
             />
           )
         ) : (
