@@ -99,14 +99,14 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
           {subtitle || entry.subtitle}
         </h2>
 
-        <div className="flex-1 flex items-start justify-center gap-4 px-2">
+        <div className="flex items-start justify-center gap-6 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-stretch gap-3 flex-1">
-              <div className="flex-1">
+            <div key={stage.id} className="flex items-center gap-3">
+              <div className="w-[420px] shrink-0">
                 <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
               </div>
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center w-6 justify-center">→</div>
               )}
             </div>
           ))}
