@@ -96,12 +96,18 @@ const Index = () => {
         const selected = selectedFilters[category.name] || [];
         if (selected.length === 0) return true;
 
+        // Check if ANY stage in this entry matches ANY selected filter
         return entry.stages.some(stage => {
           if (category.name === 'tier') {
             const tierNum = stage.tier.match(/\d+/)?.[0];
             return tierNum && selected.includes(tierNum);
           } else {
-            return stage.types?.some(type => selected.includes(type));
+            // Check if any of the stage's types match any selected filter
+            return stage.types?.some(type => 
+              selected.some(selectedType => 
+                type.toLowerCase() === selectedType.toLowerCase()
+              )
+            );
           }
         });
       });
