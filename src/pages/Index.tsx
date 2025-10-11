@@ -128,10 +128,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto">
-        <div className="mb-8">
+        <header className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <BookOpen className="w-8 h-8 text-[hsl(var(--encyclopedia-title))]" />
+              <BookOpen className="w-8 h-8 text-[hsl(var(--encyclopedia-title))]" aria-hidden="true" />
               <h1 className="encyclopedia-title text-4xl text-[hsl(var(--encyclopedia-title))]">
                 {t('title')}
               </h1>
@@ -141,54 +141,58 @@ const Index = () => {
           <p className="text-[hsl(var(--encyclopedia-subtitle))]">
             {t('subtitle')}
           </p>
-        </div>
+        </header>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : entries.length > 0 ? (
-          <div>
-            <HorizontalFilters
-              categories={categories}
-              items={itemsByCategory}
-              selectedItems={selectedFilters}
-              onToggleItem={toggleItem}
-              onClearCategory={clearCategory}
-              onClearAll={clearAllFilters}
-              totalResults={filteredEntries.length}
-            />
-            
-            {filteredEntries.length > 0 ? (
-              <div className="py-8">
-                <FlipBook 
-                  key={`flipbook-${filteredEntries.length}-${JSON.stringify(selectedFilters)}`} 
-                  entries={filteredEntries}
-                  coverImage={hasActiveFilters ? undefined : coverImage}
+        <main>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20" role="status" aria-label="Loading">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : entries.length > 0 ? (
+            <div>
+              <nav aria-label="Illuvials filters">
+                <HorizontalFilters
+                  categories={categories}
+                  items={itemsByCategory}
+                  selectedItems={selectedFilters}
+                  onToggleItem={toggleItem}
+                  onClearCategory={clearCategory}
+                  onClearAll={clearAllFilters}
+                  totalResults={filteredEntries.length}
                 />
-                <div className="text-center mt-6 text-sm text-muted-foreground">
-                  {t('dragToNavigate')}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-card rounded-lg border">
-                <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">{t('noEntriesFound')}</h3>
-                <p className="text-muted-foreground">
-                  {t('noEntriesWithFilters')}
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-card rounded-lg border">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">{t('noCatalogEntries')}</h3>
-            <p className="text-muted-foreground">
-              {t('catalogEmpty')}
-            </p>
-          </div>
-        )}
+              </nav>
+              
+              {filteredEntries.length > 0 ? (
+                <section className="py-8" aria-label="Illuvials encyclopedia">
+                  <FlipBook 
+                    key={`flipbook-${filteredEntries.length}-${JSON.stringify(selectedFilters)}`} 
+                    entries={filteredEntries}
+                    coverImage={hasActiveFilters ? undefined : coverImage}
+                  />
+                  <p className="text-center mt-6 text-sm text-muted-foreground">
+                    {t('dragToNavigate')}
+                  </p>
+                </section>
+              ) : (
+                <section className="text-center py-20 bg-card rounded-lg border">
+                  <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+                  <h2 className="text-xl font-semibold mb-2">{t('noEntriesFound')}</h2>
+                  <p className="text-muted-foreground">
+                    {t('noEntriesWithFilters')}
+                  </p>
+                </section>
+              )}
+            </div>
+          ) : (
+            <section className="text-center py-20 bg-card rounded-lg border">
+              <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+              <h2 className="text-xl font-semibold mb-2">{t('noCatalogEntries')}</h2>
+              <p className="text-muted-foreground">
+                {t('catalogEmpty')}
+              </p>
+            </section>
+          )}
+        </main>
       </div>
     </div>
   );
