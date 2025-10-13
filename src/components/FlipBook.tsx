@@ -342,22 +342,20 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           overflow: hidden;
         }
         
-        /* Establish stable 3D context and GPU acceleration */
-        .flipbook {
-          perspective: 2000px;
-          transform-style: preserve-3d;
+        /* CRITICAL FIX: Prevent mirroring and ensure backface is always hidden */
+        .flipbook .stf__page {
+          -webkit-backface-visibility: hidden !important;
+          backface-visibility: hidden !important;
+          -webkit-transform-style: preserve-3d !important;
+          transform-style: preserve-3d !important;
         }
-        .flipbook .stf__wrapper,
-        .flipbook .stf__item,
-        .flipbook .stf__page,
+        
         .flipbook .stf__content {
           -webkit-backface-visibility: hidden !important;
           backface-visibility: hidden !important;
-          transform-style: preserve-3d !important;
-          will-change: transform;
         }
         
-        /* Hide the back face at all times */
+        /* Force hide back face with multiple approaches */
         .flipbook .stf__page.--back,
         .flipbook .stf__page.--back *,
         .flipbook .stf__page.--back .page,
@@ -367,12 +365,24 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
           pointer-events: none !important;
         }
         
-        /* During flip, keep back face hidden without forcing extra transforms */
+        /* During flip animation, ensure back face stays hidden */
         .flipbook .stf__item.--flipping .stf__page.--back,
         .flipbook .stf__item.--flipping .stf__page.--back *,
         .flipbook .stf__item.--flipping .stf__page.--back .page {
           opacity: 0 !important;
           visibility: hidden !important;
+          display: none !important;
+        }
+        
+        /* Prevent transform issues that cause mirroring */
+        .flipbook .stf__page > * {
+          -webkit-backface-visibility: hidden !important;
+          backface-visibility: hidden !important;
+        }
+        
+        /* Override any transform that might cause mirroring */
+        .flipbook .stf__page.--back {
+          transform: rotateY(180deg) !important;
         }
       `}</style>
     </div>
