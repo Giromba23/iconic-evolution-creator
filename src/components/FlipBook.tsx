@@ -18,18 +18,31 @@ interface TranslatedStageProps {
   stage: any;
   entryId: string;
   isVisible: boolean;
+  shouldPreload?: boolean;
 }
-const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) => {
+const TranslatedStage = ({ stage, entryId, isVisible, shouldPreload }: TranslatedStageProps) => {
   const { t } = useTranslation();
+  const [imageLoaded, setImageLoaded] = useState(false);
   // Traduz apenas se visível
   const { translatedText: description } = useTranslateContent(isVisible ? stage.description : '', `${entryId}-${stage.id}-desc`);
   const tierLabel = translateTierLabel(stage.tier, t);
   const stageLabel = translateStageLabel(stage.stage, t);
   const imagePosClass = stage.stage === 3 ? 'object-[center_45%]' : 'object-center';
 
+  useEffect(() => {
+    if (stage.imageUrl && shouldPreload) {
+      const img = new Image();
+      img.src = stage.imageUrl;
+      img.onload = () => setImageLoaded(true);
+    }
+  }, [stage.imageUrl, shouldPreload]);
+
   return (
     <div className="flex flex-col w-full border border-[hsl(var(--encyclopedia-border))] rounded-lg overflow-hidden bg-[hsl(var(--card))]">
-      <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))]">
+      <div className="w-full aspect-[16/9] overflow-hidden bg-[hsl(var(--muted))] relative">
+        {!imageLoaded && stage.imageUrl && (
+          <div className="absolute inset-0 bg-[hsl(var(--muted))] animate-pulse" />
+        )}
         {stage.imageUrl ? (
           stage.link ? (
             <a 
@@ -41,18 +54,22 @@ const TranslatedStage = ({ stage, entryId, isVisible }: TranslatedStageProps) =>
               <img
                 src={stage.imageUrl}
                 alt={stage.name}
-                loading="lazy"
+                loading={shouldPreload ? "eager" : "lazy"}
                 decoding="async"
-                className={`${imagePosClass} w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer`}
+                onLoad={() => setImageLoaded(true)}
+                className={`${imagePosClass} w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 cursor-pointer ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                style={{ transition: 'opacity 0.3s ease-in-out' }}
               />
             </a>
           ) : (
             <img
               src={stage.imageUrl}
               alt={stage.name}
-              loading="lazy"
+              loading={shouldPreload ? "eager" : "lazy"}
               decoding="async"
-              className={`${imagePosClass} w-full h-full object-cover`}
+              onLoad={() => setImageLoaded(true)}
+              className={`${imagePosClass} w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ transition: 'opacity 0.3s ease-in-out' }}
             />
           )
         ) : (
@@ -103,7 +120,12 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
           {entry.stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center gap-3">
               <div className="w-[420px] shrink-0">
-                <TranslatedStage stage={stage} entryId={entry.id} isVisible={isVisible} />
+                <TranslatedStage 
+                  stage={stage} 
+                  entryId={entry.id} 
+                  isVisible={isVisible}
+                  shouldPreload={isVisible}
+                />
               </div>
               {index < entry.stages.length - 1 && (
                 <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center w-6 justify-center">→</div>
@@ -153,6 +175,25 @@ export const FlipBook = ({ entries, coverImage }: FlipBookProps) => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Preload próximas e anteriores páginas
+  useEffect(() => {
+    const visibleEntryIndex = coverImage ? currentPage - 1 : currentPage;
+    const preloadRange = [-1, 0, 1]; // Página anterior, atual e próxima
+    
+    preloadRange.forEach(offset => {
+      const targetIndex = visibleEntryIndex + offset;
+      if (targetIndex >= 0 && targetIndex < entries.length) {
+        const entry = entries[targetIndex];
+        entry.stages.forEach(stage => {
+          if (stage.imageUrl) {
+            const img = new Image();
+            img.src = stage.imageUrl;
+          }
+        });
+      }
+    });
+  }, [currentPage, entries, coverImage]);
 
   const goToPreviousPage = () => {
     if (bookRef.current && currentPage > 0) {
