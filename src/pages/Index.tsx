@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
 import { FlipBook } from "@/components/FlipBook";
+import { GridView } from "@/components/GridView";
 import { HorizontalFilters } from "@/components/HorizontalFilters";
+import { SearchInput } from "@/components/SearchInput";
+import { ViewToggle, ViewMode } from "@/components/ViewToggle";
 import { BookOpen, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +14,8 @@ import coverImage from "@/assets/illuvipedia-cover.png";
 
 const Index = () => {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>('flipbook');
   const { t } = useTranslation();
 
   // Fetch entries
@@ -87,11 +92,25 @@ const Index = () => {
 
   const clearAllFilters = () => {
     setSelectedFilters({});
+    setSearchQuery("");
   };
 
   // Filter entries
   const filteredEntries = useMemo(() => {
-    const filtered = entries.filter(entry => {
+    let filtered = entries;
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(entry => 
+        entry.title.toLowerCase().includes(query) ||
+        entry.subtitle.toLowerCase().includes(query) ||
+        entry.stages.some(stage => stage.name.toLowerCase().includes(query))
+      );
+    }
+
+    // Category filters
+    filtered = filtered.filter(entry => {
       return categories.every(category => {
         const selected = selectedFilters[category.name] || [];
         if (selected.length === 0) return true;
@@ -121,9 +140,9 @@ const Index = () => {
       };
       return getTier(a) - getTier(b);
     });
-  }, [entries, categories, selectedFilters]);
+  }, [entries, categories, selectedFilters, searchQuery]);
 
-  const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
+  const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0) || searchQuery.trim() !== "";
 
   return (
     <div className="min-h-screen bg-[hsl(var(--encyclopedia-bg))] p-4 md:p-8">
@@ -150,6 +169,15 @@ const Index = () => {
             </div>
           ) : entries.length > 0 ? (
             <div>
+              {/* Search and View Toggle */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <SearchInput 
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                />
+                <ViewToggle mode={viewMode} onChange={setViewMode} />
+              </div>
+
               <nav aria-label="Illuvials filters">
                 <HorizontalFilters
                   categories={categories}
@@ -164,14 +192,20 @@ const Index = () => {
               
               {filteredEntries.length > 0 ? (
                 <section className="py-8" aria-label="Illuvials encyclopedia">
-                  <FlipBook 
-                    key={`flipbook-${filteredEntries.length}-${JSON.stringify(selectedFilters)}`} 
-                    entries={filteredEntries}
-                    coverImage={hasActiveFilters ? undefined : coverImage}
-                  />
-                  <p className="text-center mt-6 text-sm text-muted-foreground">
-                    {t('dragToNavigate')}
-                  </p>
+                  {viewMode === 'flipbook' ? (
+                    <>
+                      <FlipBook 
+                        key={`flipbook-${filteredEntries.length}-${JSON.stringify(selectedFilters)}`} 
+                        entries={filteredEntries}
+                        coverImage={hasActiveFilters ? undefined : coverImage}
+                      />
+                      <p className="text-center mt-6 text-sm text-muted-foreground">
+                        {t('dragToNavigate')}
+                      </p>
+                    </>
+                  ) : (
+                    <GridView entries={filteredEntries} />
+                  )}
                 </section>
               ) : (
                 <section className="text-center py-20 bg-card rounded-lg border">

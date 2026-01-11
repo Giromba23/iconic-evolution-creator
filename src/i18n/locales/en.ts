@@ -65,5 +65,26 @@ export default {
       resultFound: "result found",
       resultsFound: "results found",
     },
+
+    // Search
+    search: {
+      placeholder: "Search by name...",
+    },
+
+    // View modes
+    view: {
+      flipbook: "Book Mode",
+      grid: "Grid Mode",
+    },
+
+    // Grid
+    grid: {
+      stage: "stage",
+      stages: "stages",
+      showAll: "Show all",
+      showFavorites: "Favorites ({{count}})",
+      noFavorites: "No favorites yet",
+      addFavorites: "Click the heart to add favorites",
+    },
   }
 };
