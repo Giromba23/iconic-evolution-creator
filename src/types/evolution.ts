@@ -7,6 +7,7 @@ export interface EvolutionStage {
   stage: string;
   types: string[];
   description: string;
+  video_url?: string;
 }
 
 export interface EvolutionEntry {

@@ -99,27 +99,61 @@ const TranslatedStage = ({ stage, entryId, isVisible, shouldPreload }: Translate
   );
 };
 
+const VideoEmbed = ({ videoUrl }: { videoUrl: string }) => {
+  // Extract YouTube video ID and convert to embed URL if needed
+  const getEmbedUrl = (url: string): string => {
+    // Already an embed URL
+    if (url.includes('/embed/')) return url;
+    
+    // YouTube watch URL
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    
+    return url;
+  };
+
+  return (
+    <div className="w-full aspect-video rounded-lg overflow-hidden border border-[hsl(var(--encyclopedia-border))] bg-black/50">
+      <iframe
+        src={getEmbedUrl(videoUrl)}
+        title="Illuvial Video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="w-full h-full"
+      />
+    </div>
+  );
+};
+
 const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: boolean }>((
   { entry, isVisible }, ref
 ) => {
+  const { t } = useTranslation();
   const { translatedText: subtitle } = useTranslateContent(
     isVisible ? entry.subtitle : '',
     `${entry.id}-subtitle`
   );
+  
+  // Get video from first stage that has one (usually stage 3 / final form)
+  const stageWithVideo = entry.stages.find(s => s.video_url);
+  const videoUrl = stageWithVideo?.video_url;
+
   return (
-    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-6 shadow-2xl">
+    <div ref={ref} className="page bg-[hsl(var(--encyclopedia-card))] p-4 shadow-2xl">
       <div className="w-full h-full flex flex-col">
-        <h1 className="encyclopedia-title text-xl text-center mb-1 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
+        <h1 className="encyclopedia-title text-lg text-center mb-0.5 text-[hsl(var(--encyclopedia-title))] uppercase tracking-wide">
           {entry.title}
         </h1>
-        <h2 className="encyclopedia-title text-sm text-center mb-4 text-[hsl(var(--encyclopedia-subtitle))] italic">
+        <h2 className="encyclopedia-title text-xs text-center mb-2 text-[hsl(var(--encyclopedia-subtitle))] italic">
           {subtitle || entry.subtitle}
         </h2>
 
-        <div className="flex items-start justify-center gap-6 px-2">
+        <div className="flex items-start justify-center gap-4 px-2">
           {entry.stages.map((stage, index) => (
-            <div key={stage.id} className="flex items-center gap-3">
-              <div className="w-[420px] shrink-0">
+            <div key={stage.id} className="flex items-center gap-2">
+              <div className="w-[400px] shrink-0">
                 <TranslatedStage 
                   stage={stage} 
                   entryId={entry.id} 
@@ -128,11 +162,26 @@ const Page = forwardRef<HTMLDivElement, { entry: EvolutionEntry; isVisible: bool
                 />
               </div>
               {index < entry.stages.length - 1 && (
-                <div className="text-[hsl(var(--encyclopedia-text))] text-2xl font-bold flex items-center w-6 justify-center">→</div>
+                <div className="text-[hsl(var(--encyclopedia-text))] text-xl font-bold flex items-center w-5 justify-center">→</div>
               )}
             </div>
           ))}
         </div>
+
+        {/* Video Section */}
+        {videoUrl ? (
+          <div className="mt-3 px-4 flex-1 min-h-0">
+            <VideoEmbed videoUrl={videoUrl} />
+          </div>
+        ) : (
+          <div className="mt-3 px-4 flex-1 min-h-0 flex items-center justify-center">
+            <div className="w-full h-full max-h-[180px] rounded-lg border border-dashed border-[hsl(var(--encyclopedia-border))] bg-[hsl(var(--muted))]/30 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground italic">
+                {t('flipbook.noVideo', 'Vídeo em breve...')}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
