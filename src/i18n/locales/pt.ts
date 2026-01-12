@@ -56,6 +56,7 @@ export default {
       previous: "Página anterior",
       next: "Próxima página",
       pageIndicator: "Página {{current}} de {{total}}",
+      noVideo: "Vídeo em breve...",
     },
     
     // Filters
