@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Video } from "lucide-react";
 import { toast } from "sonner";
 
 interface EvolutionFormProps {
@@ -26,6 +26,7 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
         stage: "",
         types: [],
         description: "",
+        video_url: "",
       },
     ]
   );
@@ -44,6 +45,7 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
           stage: "",
           types: [],
           description: "",
+          video_url: "",
         },
       ]
     );
@@ -60,6 +62,7 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
         stage: "",
         types: [],
         description: "",
+        video_url: "",
       },
     ]);
   };
@@ -234,6 +237,24 @@ export const EvolutionForm = ({ onSave, initialData }: EvolutionFormProps) => {
               <p className="text-xs text-muted-foreground mt-1">
                 Você pode usar HTML para formatação e ícones inline:<br/>
                 Exemplo: &lt;img src="url-do-icone" class="inline w-4 h-4" /&gt; para adicionar ícones no texto
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor={`video-${stage.id}`}>URL do Vídeo (YouTube)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id={`video-${stage.id}`}
+                  value={stage.video_url || ""}
+                  onChange={(e) => updateStage(stage.id, "video_url", e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <Button type="button" variant="outline" size="icon">
+                  <Video className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cole a URL completa do YouTube. O vídeo será exibido abaixo dos estágios no FlipBook.
               </p>
             </div>
           </div>
